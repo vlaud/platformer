@@ -116,6 +116,7 @@ public class PlayerMovement : Controlable
 
     public void SetRigidbody(bool v)
     {
+        transform.GetComponent<SpriteRenderer>().enabled = v;
         body.simulated = v;
         boxCollider.enabled = v;
     }
@@ -144,7 +145,7 @@ public class PlayerMovement : Controlable
     {
         if ((groundMask & 1 << collision.gameObject.layer) != 0)
         {
-            if(body.velocity.y <= 0f)
+            if(body.velocity.y < 0f)
             {
                 jumpTimes++;
             }
