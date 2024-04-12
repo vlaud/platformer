@@ -3,14 +3,13 @@ using UnityEngine;
 public class Box : MonoBehaviour
 {
     private Rigidbody2D rb;
-    [SerializeField] private BoxCollider2D boxCollider;
+    [SerializeField] private float shootForce = 10f;
     [SerializeField] private Vector3 boxSize;
     [SerializeField] private LayerMask groundMask;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        boxCollider = GetComponent<BoxCollider2D>();
     }
 
     private void OnCollisionExit2D(Collision2D collision)
@@ -30,7 +29,7 @@ public class Box : MonoBehaviour
 
         if(rb.velocity.y > 5f)
         {
-            rb.AddForce(raycastHit.normal * 10f, ForceMode2D.Impulse);
+            rb.AddForce(raycastHit.normal * shootForce, ForceMode2D.Impulse);
             Debug.Log("shoot");
         }
     }
