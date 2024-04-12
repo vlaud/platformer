@@ -63,6 +63,11 @@ public class PlayerMovement : Controlable
 
     public override void Move(Vector2 input)
     {
+        if (input.x < 0f)
+            transform.localScale = new Vector2(-1f, 1);
+        else if (input.x > 0f)
+            transform.localScale = Vector2.one;
+
         switch (State)
         {
             case PlayerState.Moving:
@@ -125,7 +130,10 @@ public class PlayerMovement : Controlable
     private void OnCollisionEnter2D(Collision2D collision)
     {
         ChangeState(PlayerState.Moving);
-        GameManager.Inst.Controller.ChangeControlTarget(this);
+
+        if (GameManager.Inst.Controller.controlTarget == null)
+            GameManager.Inst.Controller.ChangeControlTarget(this);
+
         if (collision.gameObject.layer == LayerMask.NameToLayer("Cannon"))
         {
             ToCannon(collision);
