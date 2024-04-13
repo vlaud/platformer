@@ -7,6 +7,7 @@ public class PlayerMovement : Controlable
         Moving, Flying
     }
 
+    [Header("움직임, 점프")]
     [SerializeField] private float speed;
     [SerializeField] private float jumpPower = 300f;
     [SerializeField] private int jumpLimit = 2;
@@ -14,9 +15,14 @@ public class PlayerMovement : Controlable
     [SerializeField] private LayerMask groundMask;
     private Rigidbody2D body;
     private Ground _ground;
+    [Header("물리")]
     [SerializeField] private float desireX;
     [SerializeField] private BoxCollider2D boxCollider;
     [SerializeField] private Vector3 boxSize;
+    [SerializeField] private float coyoteTime = 0.2f;
+    private float coyoteTimeCounter;
+    [SerializeField] private float jumpBufferTime = 0.2f;
+    private float jumpBufferCounter;
 
     public Rigidbody2D PlayerBody => body;
     public BoxCollider2D BoxCollider => boxCollider;
@@ -34,15 +40,31 @@ public class PlayerMovement : Controlable
 
     private void Update()
     {
-        if(body.velocity.y <= 0)
+        if (body.velocity.y <= 0)
         {
-            if(GameManager.Inst.Controller.controlTarget == null)
+            if (GameManager.Inst.Controller.controlTarget == null)
                 GameManager.Inst.Controller.ChangeControlTarget(this);
+
             if (IsGrounded())
             {
+                coyoteTimeCounter = coyoteTime;
                 jumpTimes = 0;
             }
+            else
+            {
+                if (coyoteTimeCounter > 0f) coyoteTimeCounter -= Time.deltaTime;
+                if (coyoteTimeCounter < 0f)
+                {
+                    jumpTimes++;
+                    coyoteTimeCounter = 0f;
+                }
+            }
         }
+
+        jumpBufferCounter -= Time.deltaTime;
+
+        if(jumpBufferCounter > 0f)
+            JumpAction();
     }
 
     public void ChangeState(PlayerState s)
@@ -84,19 +106,28 @@ public class PlayerMovement : Controlable
 
     public override void Jump()
     {
-        if(jumpTimes < jumpLimit)
+        jumpBufferCounter = jumpBufferTime;
+    }
+
+    void JumpAction()
+    {
+        if (jumpTimes < jumpLimit)
         {
+            coyoteTimeCounter = 0f;
             SetVelocity(new Vector2(body.velocity.x, 0f));
 
             body.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             jumpTimes++;
+
+            jumpBufferCounter = 0f;
         }
     }
+
     bool IsGrounded()
     {
         Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - boxSize.y / 2, 0.0f);
         RaycastHit2D raycastHit = Physics2D.BoxCast(bottom, boxSize, 0f, Vector2.down, 0.1f, groundMask);
-      
+
         return raycastHit.collider != null;
     }
 
@@ -138,17 +169,6 @@ public class PlayerMovement : Controlable
         if (collision.gameObject.layer == LayerMask.NameToLayer("Cannon"))
         {
             ToCannon(collision);
-        }
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if ((groundMask & 1 << collision.gameObject.layer) != 0)
-        {
-            if(body.velocity.y < 0f)
-            {
-                jumpTimes++;
-            }
         }
     }
 

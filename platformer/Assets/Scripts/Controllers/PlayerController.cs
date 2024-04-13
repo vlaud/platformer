@@ -33,7 +33,7 @@ public class PlayerController : Controller
 
     private void InputJumpAction()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetButtonDown("Jump"))
         {
             if (controlTarget != null)
                 controlTarget.Jump();
