@@ -890,6 +890,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 768
   _clickPedal: {fileID: 329384476}
+  _portal: {fileID: 1852537186}
 --- !u!1 &750078160
 GameObject:
   m_ObjectHideFlags: 0
@@ -1378,6 +1379,8 @@ MonoBehaviour:
   desireX: 0
   boxCollider: {fileID: 1096006425}
   boxSize: {x: 1, y: 0.2, z: 1}
+  coyoteTime: 0.2
+  jumpBufferTime: 0.2
   State: 0
 --- !u!114 &1096006430
 MonoBehaviour:
@@ -1709,6 +1712,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1852537185}
+  - component: {fileID: 1852537186}
   - component: {fileID: 1852537184}
   - component: {fileID: 1852537183}
   m_Layer: 0
@@ -1875,7 +1879,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 1
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -2629,7 +2633,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: 15
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -6530,6 +6534,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1852537186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1852537182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74ef4a7481eada04e9468ea10fb02145, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _originColor: {r: 0.9058824, g: 0.9058824, b: 0.9058824, a: 1}
 --- !u!1001 &5632883346831003003
 PrefabInstance:
   m_ObjectHideFlags: 0
