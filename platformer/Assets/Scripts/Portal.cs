@@ -7,6 +7,8 @@ public class Portal : MonoBehaviour
     [SerializeField] private Color _originColor;
     ParticleSystem ps;
 
+    public bool IsPortal;
+
     private void Awake()
     {
         ps = GetComponent<ParticleSystem>();
@@ -17,5 +19,6 @@ public class Portal : MonoBehaviour
     {
         var settings = ps.main;
         settings.startColor = v ? _originColor : new Color(_originColor.r, _originColor.g, _originColor.b, 0f);
+        IsPortal = v;
     }
 }
