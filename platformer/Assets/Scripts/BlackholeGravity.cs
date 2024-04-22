@@ -117,11 +117,9 @@ public class BlackholeGravity : MonoBehaviour
                 float force = PullForce * (m1 * BlackholeMass) / sqrDist;
 
                 force = Mathf.Clamp(force, MinimumForce, force);
-                Debug.Log(force);
 
                 rigid.AddForce(ForceDir.normalized * force * Time.deltaTime);
             }
-            else Debug.Log("nogr");
 
             yield return new WaitForSeconds(RefreshRate);
         }
