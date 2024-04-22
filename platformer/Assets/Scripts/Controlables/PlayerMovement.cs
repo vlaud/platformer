@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : Controlable
@@ -23,6 +24,11 @@ public class PlayerMovement : Controlable
     private float coyoteTimeCounter;
     [SerializeField] private float jumpBufferTime = 0.2f;
     private float jumpBufferCounter;
+
+    [Header("Æ÷Å»")]
+    [SerializeField] private Vector3 scaleChange = new Vector3(0.01f, 0.01f, 0.01f);
+    [SerializeField] private float scaleSpeed = 3f;
+    [SerializeField] private float scaleRotSpeed = 1000f;
 
     public Rigidbody2D PlayerBody => body;
     public BoxCollider2D BoxCollider => boxCollider;
@@ -136,6 +142,11 @@ public class PlayerMovement : Controlable
         body.velocity = velocity;
     }
 
+    void SetGravity(float amount)
+    {
+        body.gravityScale = amount;
+    }
+
     void ToCannon(Collision2D collision)
     {
         CannonControlable target = collision.gameObject.GetComponent<CannonControlable>();
@@ -143,6 +154,57 @@ public class PlayerMovement : Controlable
         target.SetCannonBall(transform);
         transform.SetParent(target.Launcher);
         GameManager.Inst.Controller.ChangeControlTarget(target);
+    }
+
+    public void ToGate(GateAction gate)
+    {
+        StartCoroutine(ToGateCoroutine(gate));
+    }
+
+    public void OutGate()
+    {
+        StartCoroutine(OutGateCoroutine());
+    }
+
+    IEnumerator ToGateCoroutine(GateAction gate)
+    {
+        SetVelocity(Vector2.zero);
+        SetGravity(0f);
+        GameManager.Inst.Controller.ChangeControlTarget(gate);
+        transform.localScale = Vector2.one;
+
+        while (Vector3.Distance(transform.position, gate.transform.position) > 0.1f)
+        {
+            yield return null;
+            transform.position += (gate.transform.position - transform.position).normalized * Time.deltaTime * 3f;
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        while (transform.localScale.y > 0.1f)
+        {
+            yield return null;
+
+            transform.localScale -= scaleChange * Time.deltaTime * scaleSpeed;
+            transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
+        }
+
+        transform.position = gate.ConnectedGate.transform.position;
+    }
+
+    IEnumerator OutGateCoroutine()
+    {
+        while (transform.localScale.y < 1f)
+        {
+            yield return null;
+
+            transform.localScale += scaleChange * Time.deltaTime * scaleSpeed;
+            transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
+        }
+
+        transform.localScale = Vector2.one;
+        SetGravity(2.5f);
+        GameManager.Inst.Controller.ChangeControlTarget(this);
     }
 
     public void SetRigidbody(bool v)
