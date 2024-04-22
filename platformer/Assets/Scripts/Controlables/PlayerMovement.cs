@@ -170,6 +170,7 @@ public class PlayerMovement : Controlable
     {
         SetVelocity(Vector2.zero);
         SetGravity(0f);
+        body.freezeRotation = true;
         GameManager.Inst.Controller.ChangeControlTarget(gate);
         transform.localScale = Vector2.one;
 
@@ -203,6 +204,8 @@ public class PlayerMovement : Controlable
         }
 
         transform.localScale = Vector2.one;
+        transform.rotation = Quaternion.identity;
+        body.freezeRotation = false;
         SetGravity(2.5f);
         GameManager.Inst.Controller.ChangeControlTarget(this);
     }
