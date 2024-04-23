@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[RequireComponent(typeof(Portal))]
 public class BlackholeGravity : MonoBehaviour
 {
     public Transform BlackholeCenter;

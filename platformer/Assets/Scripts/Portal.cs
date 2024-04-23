@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Portal : MonoBehaviour
+public class Portal : MonoBehaviour, iButtonAction
 {
     [SerializeField] private Color _originColor;
     ParticleSystem ps;
@@ -12,10 +12,10 @@ public class Portal : MonoBehaviour
     private void Awake()
     {
         ps = GetComponent<ParticleSystem>();
-        SetGate(false);
+        ButtonAction(false);
     }
 
-    public void SetGate(bool v)
+    public void ButtonAction(bool v)
     {
         var settings = ps.main;
         settings.startColor = v ? _originColor : new Color(_originColor.r, _originColor.g, _originColor.b, 0f);

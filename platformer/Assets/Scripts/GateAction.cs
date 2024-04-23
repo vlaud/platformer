@@ -2,14 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Portal))]
 public class GateAction : Controlable
 {
     public bool IsEntrance = false;
     public GateAction ConnectedGate;
 
+    private Portal portal;
+
     private void Awake()
     {
-        if(IsEntrance) CreateConnection(this, false);
+        portal = GetComponent<Portal>();
+        if (IsEntrance) CreateConnection(this, false);
+    }
+
+    private void Update()
+    {
+        if (!IsEntrance)
+        {
+            portal.ButtonAction(ConnectedGate.portal.IsPortal);
+        }
     }
 
     public void CreateConnection(GateAction gate, bool v)
@@ -20,7 +32,7 @@ public class GateAction : Controlable
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Player") && portal.IsPortal)
         {
             if (IsEntrance)
             {
