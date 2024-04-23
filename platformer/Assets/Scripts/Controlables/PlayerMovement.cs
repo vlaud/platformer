@@ -174,7 +174,7 @@ public class PlayerMovement : Controlable
     IEnumerator ToGateCoroutine(GateAction gate)
     {
         SetVelocity(Vector2.zero);
-        SetGravity(0f);
+        body.isKinematic = true;
         body.freezeRotation = true;
         GameManager.Inst.Controller.ChangeControlTarget(gate);
         transform.localScale = Vector2.one;
@@ -215,6 +215,7 @@ public class PlayerMovement : Controlable
         transform.localScale = Vector2.one;
         transform.rotation = Quaternion.identity;
         body.freezeRotation = false;
+        body.isKinematic = false;
         SetGravity(2.5f);
         GameManager.Inst.Controller.ChangeControlTarget(this);
     }
