@@ -6,18 +6,18 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Vector2 aheadDistance;
     [SerializeField] private float cameraSpeed;
     [SerializeField] private float dropYVelocity = -10f;
-    [SerializeField] private Transform player;
+    [SerializeField] private Transform camTarget;
 
-    public Transform Player
+    public Transform CamTarget
     {
-        get => player;
+        get => camTarget;
         set
         {
-            player = value;
+            camTarget = value;
         }
     }
 
-    private Vector2 lookAhead;
+    [SerializeField] private Vector2 lookAhead;
 
     // Gate Cam
     private Vector3 velocity = Vector3.zero;
@@ -25,23 +25,75 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        if(player != null)
+        if(camTarget != null)
+            CamStateProcess();
+    }
+
+    void CamStateProcess()
+    {
+        if (GetTypeofControlable.GetType(camTarget) == typeof(PlayerMovement))
+        {
             CharacterCamMove();
+        }
+
+        if (GetTypeofControlable.GetType(camTarget) == typeof(CannonControlable))
+        {
+            CannonCamMove();
+        }
+
+        if (GetTypeofControlable.GetType(camTarget) == typeof(GateAction))
+        {
+            SetVelocityOfCam(Vector2.zero);
+            GateCamMove();
+        }
+    }
+
+    void SetVelocityOfCam(Vector2 value)
+    {
+        lookAhead = value;
     }
 
     void CharacterCamMove()
     {
-        var body = player.GetComponent<Rigidbody2D>();
-        transform.position = new Vector3(player.position.x + lookAhead.x, player.position.y + lookAhead.y, transform.position.z);
-        lookAhead.x = Mathf.Lerp(lookAhead.x, (aheadDistance.x * player.localScale.x), Time.deltaTime * cameraSpeed);
-
+        var body = camTarget.GetComponent<Rigidbody2D>();
+        
+        lookAhead.x = Mathf.Lerp(lookAhead.x, (aheadDistance.x * camTarget.localScale.x), Time.deltaTime * cameraSpeed);
         lookAhead.y = Mathf.Lerp(lookAhead.y, aheadDistance.y * (body.velocity.y < dropYVelocity ? -1f : 1f), Time.deltaTime * cameraSpeed);
+
+        transform.position = new Vector3(camTarget.position.x + lookAhead.x, camTarget.position.y + lookAhead.y, transform.position.z);
     }
 
-    public void GateCamMove()
+    void CannonCamMove()
+    {
+        var cannon = camTarget.GetComponent<CannonControlable>();
+        float rot = cannon.Launcher.rotation.z;
+        float rotDir = rot <= 0f ? 1f : -1f;
+
+        Vector3 desiredPos = new Vector3(camTarget.position.x + aheadDistance.x * rotDir, camTarget.position.y + aheadDistance.y, transform.position.z);
+        transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * cameraSpeed);
+
+        lookAhead = transform.position - cannon.ShootPos.position;
+    }
+
+    public void SetCamTarget(Transform target)
+    {
+        CamTarget = target;
+    }
+
+    void GateCamMove()
+    {
+        float targetX = camTarget.position.x;
+        float playerX = GameManager.Inst.Player.transform.position.x;
+        float rotDir = targetX < playerX ? 1f : -1f;
+
+        Vector3 desiredPos = new Vector3(camTarget.position.x + aheadDistance.x * rotDir, camTarget.position.y + aheadDistance.y, transform.position.z);
+        transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * cameraSpeed);
+    }
+
+    public void CamDampMove(Transform target)
     {
         float z = transform.position.z;
-        Vector3 playerPos = GameManager.Inst.Player.transform.position;
+        Vector3 playerPos = target.position;
         Vector3 temp = new Vector3(playerPos.x + lookAhead.x, playerPos.y + lookAhead.y, playerPos.z);
         Vector3 desirePos = Vector3.SmoothDamp(transform.position, temp, ref velocity, gateCameraSpeed);
         desirePos.z = z;

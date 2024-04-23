@@ -196,7 +196,7 @@ public class PlayerMovement : Controlable
             transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
         }
 
-        cameraController.Player = null;
+        cameraController.CamTarget = null;
         transform.position = gate.ConnectedGate.transform.position;
     }
 
@@ -204,14 +204,14 @@ public class PlayerMovement : Controlable
     {
         while (transform.localScale.y < 1f)
         {
-            cameraController.GateCamMove();
+            cameraController.CamDampMove(GameManager.Inst.Player.transform);
             yield return null;
 
             transform.localScale += scaleChange * Time.deltaTime * scaleSpeed;
             transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
         }
 
-        cameraController.Player = transform;
+        cameraController.CamTarget = transform;
         transform.localScale = Vector2.one;
         transform.rotation = Quaternion.identity;
         body.freezeRotation = false;

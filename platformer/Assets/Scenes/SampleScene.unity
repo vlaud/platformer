@@ -5581,6 +5581,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: {fileID: 1096006429}
   Controller: {fileID: 750078161}
+  CameraController: {fileID: 519420033}
 --- !u!4 &454957721
 Transform:
   m_ObjectHideFlags: 0
@@ -5717,7 +5718,8 @@ MonoBehaviour:
   aheadDistance: {x: 3, y: 3}
   cameraSpeed: 2
   dropYVelocity: -8
-  player: {fileID: 1096006427}
+  camTarget: {fileID: 1096006427}
+  lookAhead: {x: 0, y: 0}
   gateCameraSpeed: 0.1
 --- !u!1 &585186936
 GameObject:
@@ -16706,7 +16708,7 @@ Transform:
   m_GameObject: {fileID: 2034989210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.49, y: 3.33, z: 0}
+  m_LocalPosition: {x: 6.1, y: 3.33, z: 0}
   m_LocalScale: {x: 1, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

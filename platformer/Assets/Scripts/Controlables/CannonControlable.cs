@@ -31,6 +31,9 @@ public class CannonControlable : Controlable
 
     public override void Move(Vector2 input)
     {
+        float rotDir = rot <= 0f ? 1f : -1f;
+        player.transform.localScale = new Vector2(rotDir, 1);
+
         rot -= input.x;
         rot = Mathf.Clamp(rot, rotLimit.x, rotLimit.y);
         launcher.localRotation = Quaternion.Euler(0f, 0f, rot);
