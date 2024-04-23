@@ -8,6 +8,9 @@ public class PlayerMovement : Controlable
         Moving, Flying
     }
 
+    [Header("카메라")]
+    [SerializeField] private CameraController cameraController;
+
     [Header("움직임, 점프")]
     [SerializeField] private float speed;
     [SerializeField] private float jumpPower = 300f;
@@ -16,6 +19,7 @@ public class PlayerMovement : Controlable
     [SerializeField] private LayerMask groundMask;
     private Rigidbody2D body;
     private Ground _ground;
+
     [Header("물리")]
     [SerializeField] private float desireX;
     [SerializeField] private BoxCollider2D boxCollider;
@@ -27,6 +31,7 @@ public class PlayerMovement : Controlable
 
     [Header("포탈")]
     [SerializeField] private Vector3 scaleChange = new Vector3(0.01f, 0.01f, 0.01f);
+    [SerializeField] private float gateMoveSpeed = 3f;
     [SerializeField] private float scaleSpeed = 3f;
     [SerializeField] private float scaleRotSpeed = 1000f;
 
@@ -176,8 +181,9 @@ public class PlayerMovement : Controlable
 
         while (Vector3.Distance(transform.position, gate.transform.position) > 0.1f)
         {
+            Debug.Log("Moving");
             yield return null;
-            transform.position += (gate.transform.position - transform.position).normalized * Time.deltaTime * 3f;
+            transform.position += (gate.transform.position - transform.position).normalized * Time.deltaTime * gateMoveSpeed;
         }
 
         yield return new WaitForSeconds(0.5f);
@@ -185,11 +191,12 @@ public class PlayerMovement : Controlable
         while (transform.localScale.y > 0.1f)
         {
             yield return null;
-
+            Debug.Log("spin");
             transform.localScale -= scaleChange * Time.deltaTime * scaleSpeed;
             transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
         }
 
+        cameraController.Player = null;
         transform.position = gate.ConnectedGate.transform.position;
     }
 
@@ -197,12 +204,14 @@ public class PlayerMovement : Controlable
     {
         while (transform.localScale.y < 1f)
         {
+            cameraController.GateCamMove();
             yield return null;
 
             transform.localScale += scaleChange * Time.deltaTime * scaleSpeed;
             transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
         }
 
+        cameraController.Player = transform;
         transform.localScale = Vector2.one;
         transform.rotation = Quaternion.identity;
         body.freezeRotation = false;
