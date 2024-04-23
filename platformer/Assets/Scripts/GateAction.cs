@@ -41,6 +41,9 @@ public class GateAction : Controlable
             }
             else
             {
+                if (GetTypeofControlable.GetType(GameManager.Inst.Controller.controlTarget.transform)
+                    != typeof(GateAction)) return;
+                
                 Debug.Log("gateOut");
                 collision.GetComponent<PlayerMovement>().OutGate();
             }
