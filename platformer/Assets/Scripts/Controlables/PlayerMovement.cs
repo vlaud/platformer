@@ -17,13 +17,27 @@ public class PlayerMovement : Controlable
     [SerializeField] private int jumpLimit = 2;
     [SerializeField] private int jumpTimes;
     [SerializeField] private LayerMask groundMask;
+    [SerializeField] private float horizontal;
+
     private Rigidbody2D body;
     private Ground _ground;
+
+    [Header("벽 점프")]
+    [SerializeField] private LayerMask wallMask;
+    private bool isWallSliding;
+    private bool isWallJumping;
+    private float wallJumpingDirection;
+    [SerializeField] private float wallJumpingTime = 0.2f;
+    private float wallJumpingCounter;
+    [SerializeField] private float walllJumpingDuration = 0.4f;
+    [SerializeField] private Vector2 wallJumpingPower = new Vector2(8f, 16f);
+    [SerializeField] private float wallSlidingSpeed = 2f;
 
     [Header("물리")]
     [SerializeField] private float desireX;
     [SerializeField] private BoxCollider2D boxCollider;
-    [SerializeField] private Vector3 boxSize;
+    [SerializeField] private Vector3 groundBoxSize;
+    [SerializeField] private Vector3 wallBoxSize;
     [SerializeField] private float coyoteTime = 0.2f;
     private float coyoteTimeCounter;
     [SerializeField] private float jumpBufferTime = 0.2f;
@@ -72,9 +86,12 @@ public class PlayerMovement : Controlable
             }
         }
 
+        WallSlide();
+        WallJump();
+
         jumpBufferCounter -= Time.deltaTime;
 
-        if(jumpBufferCounter > 0f)
+        if (jumpBufferCounter > 0f)
             JumpAction();
     }
 
@@ -96,18 +113,21 @@ public class PlayerMovement : Controlable
 
     public override void Move(Vector2 input)
     {
-        if (input.x < 0f)
+        if (isWallJumping) return;
+
+        horizontal = input.x;
+        if (horizontal < 0f)
             transform.localScale = new Vector2(-1f, 1);
-        else if (input.x > 0f)
+        else if (horizontal > 0f)
             transform.localScale = Vector2.one;
 
         switch (State)
         {
             case PlayerState.Moving:
-                SetVelocity(new Vector2(input.x * (speed - _ground.Friction), body.velocity.y));
+                SetVelocity(new Vector2(horizontal * (speed - _ground.Friction), body.velocity.y));
                 break;
             case PlayerState.Flying:
-                desireX = Mathf.Lerp(desireX, input.x, speed * Time.deltaTime);
+                desireX = Mathf.Lerp(desireX, horizontal, speed * Time.deltaTime);
                 float x = desireX + body.velocity.x;
                 x = Mathf.Clamp(x, -speed, speed);
                 SetVelocity(new Vector2(x, body.velocity.y));
@@ -118,6 +138,29 @@ public class PlayerMovement : Controlable
     public override void Jump()
     {
         jumpBufferCounter = jumpBufferTime;
+
+        if (wallJumpingCounter > 0f)
+        {
+            WallJumpAction();
+        }
+    }
+
+    void WallJumpAction()
+    {
+        if (jumpTimes < jumpLimit)
+        {
+            isWallJumping = true;
+            SetVelocity(new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y));
+
+            wallJumpingCounter = 0f;
+
+            Invoke(nameof(StopWallJumping), walllJumpingDuration);
+
+            if (transform.localScale.x != wallJumpingDirection)
+            {
+                transform.localScale = new Vector2(wallJumpingDirection, 1f);
+            }
+        }
     }
 
     void JumpAction()
@@ -134,12 +177,56 @@ public class PlayerMovement : Controlable
         }
     }
 
+    private void StopWallJumping()
+    {
+        isWallJumping = false;
+    }
+
+    private void WallJump()
+    {
+        if (isWallSliding)
+        {
+            jumpTimes = 0;
+            isWallJumping = false;
+            wallJumpingDirection = -transform.localScale.x;
+            wallJumpingCounter = wallJumpingTime;
+
+            CancelInvoke(nameof(StopWallJumping));
+        }
+        else
+        {
+            wallJumpingCounter -= Time.deltaTime;
+        }
+    }
+
     bool IsGrounded()
     {
-        Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - boxSize.y / 2, 0.0f);
-        RaycastHit2D raycastHit = Physics2D.BoxCast(bottom, boxSize, 0f, Vector2.down, 0.1f, groundMask);
+        Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - groundBoxSize.y / 2, 0.0f);
+        RaycastHit2D raycastHit = Physics2D.BoxCast(bottom, groundBoxSize, 0f, Vector2.down, 0.1f, groundMask);
 
         return raycastHit.collider != null;
+    }
+
+    bool IsWalled()
+    {
+        Vector3 wallCheck = boxCollider.bounds.center
+            + new Vector3((boxCollider.bounds.extents.x - wallBoxSize.x / 2f) * transform.localScale.x, 0.0f, 0.0f);
+        RaycastHit2D raycastHit = Physics2D.BoxCast(wallCheck, wallBoxSize, 0f, Vector2.right * transform.localScale.x, 0.1f, wallMask);
+
+        return raycastHit.collider != null;
+    }
+
+    void WallSlide()
+    {
+        if (IsWalled() && !IsGrounded() && horizontal != 0f)
+        {
+            isWallSliding = true;
+            SetVelocity(new Vector2(body.velocity.x, Mathf.Clamp(body.velocity.y, -wallSlidingSpeed, float.MaxValue)));
+        }
+        else
+        {
+            isWallSliding = false;
+        }
     }
 
     public void SetVelocity(Vector2 velocity)
@@ -230,8 +317,14 @@ public class PlayerMovement : Controlable
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - boxSize.y / 2, 0.0f);
-        Gizmos.DrawCube(bottom, boxSize);
+        Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - groundBoxSize.y / 2f, 0.0f);
+        Gizmos.DrawCube(bottom, groundBoxSize);
+
+        Gizmos.color = Color.blue;
+        Vector3 wallCheck = boxCollider.bounds.center
+            + new Vector3((boxCollider.bounds.extents.x - wallBoxSize.x / 2f) * transform.localScale.x, 0.0f, 0.0f);
+
+        Gizmos.DrawCube(wallCheck, wallBoxSize);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
