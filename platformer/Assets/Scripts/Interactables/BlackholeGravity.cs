@@ -33,8 +33,11 @@ public class BlackholeGravity : MonoBehaviour
             if (!pullableObjs.ContainsKey(collision.transform))
             {
                 pullableObjs.Add(collision.transform, StartCoroutine(pullObject(collision)));
-                SetGravity(collision.transform, 0f);
-                LerpVelocity(collision, false);
+                if (_Portal.IsPortal)
+                {
+                    SetGravity(collision.transform, 0f);
+                    LerpVelocity(collision, false);
+                }
             }
         }
     }

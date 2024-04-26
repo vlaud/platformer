@@ -10,4 +10,5 @@ public class GameManager : MonoBehaviour
     public PlayerMovement Player;
     public Controller Controller;
     public CameraController CameraController;
+    public Transform Mask;
 }

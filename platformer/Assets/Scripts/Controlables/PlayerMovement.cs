@@ -18,6 +18,7 @@ public class PlayerMovement : Controlable
     [SerializeField] private int jumpTimes;
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private float horizontal;
+    [SerializeField] private float direction = 1f;
 
     private Rigidbody2D body;
     private Ground _ground;
@@ -35,7 +36,7 @@ public class PlayerMovement : Controlable
 
     [Header("물리")]
     [SerializeField] private float desireX;
-    [SerializeField] private BoxCollider2D boxCollider;
+    [SerializeField] private Collider2D _collider;
     [SerializeField] private Vector3 groundBoxSize;
     [SerializeField] private Vector3 wallBoxSize;
     [SerializeField] private float coyoteTime = 0.2f;
@@ -49,8 +50,17 @@ public class PlayerMovement : Controlable
     [SerializeField] private float scaleSpeed = 3f;
     [SerializeField] private float scaleRotSpeed = 1000f;
 
+    [Header("박스")]
+    [SerializeField] private LayerMask boxMask;
+    [SerializeField] private float rayLength = 1f;
+    [SerializeField] private Transform mask;
+
+    [Header("메시지")]
+    [SerializeField] private Transform ShowMessages;
+    [SerializeField] private TMPro.TMP_Text showText;
+
     public Rigidbody2D PlayerBody => body;
-    public BoxCollider2D BoxCollider => boxCollider;
+    public Collider2D PlayerCollider => _collider;
 
     public LayerMask GroundMask => groundMask;
 
@@ -61,6 +71,11 @@ public class PlayerMovement : Controlable
         body = GetComponent<Rigidbody2D>();
         _ground = GetComponent<Ground>();
         jumpTimes = jumpLimit;
+
+        if (GameManager.Inst.Player != this)
+        {
+            GetComponent<PlayerMovement>().enabled = false;
+        }
     }
 
     private void Update()
@@ -93,6 +108,8 @@ public class PlayerMovement : Controlable
 
         if (jumpBufferCounter > 0f)
             JumpAction();
+
+        EnableMessages("Switch", boxMask);
     }
 
     public void ChangeState(PlayerState s)
@@ -107,19 +124,23 @@ public class PlayerMovement : Controlable
                 desireX = 0f;
                 break;
             case PlayerState.Flying:
+                jumpTimes = 1;
                 break;
         }
     }
 
+    #region AbstractMethods
     public override void Move(Vector2 input)
     {
         if (isWallJumping) return;
 
         horizontal = input.x;
         if (horizontal < 0f)
-            transform.localScale = new Vector2(-1f, 1);
+            direction = -1f;
         else if (horizontal > 0f)
-            transform.localScale = Vector2.one;
+            direction = 1f;
+
+        SetLocalScale(new Vector2(direction, 1));
 
         switch (State)
         {
@@ -145,24 +166,23 @@ public class PlayerMovement : Controlable
         }
     }
 
-    void WallJumpAction()
+    public override void Rotate(Vector2 input)
     {
-        if (jumpTimes < jumpLimit)
-        {
-            isWallJumping = true;
-            SetVelocity(new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y));
-
-            wallJumpingCounter = 0f;
-
-            Invoke(nameof(StopWallJumping), walllJumpingDuration);
-
-            if (transform.localScale.x != wallJumpingDirection)
-            {
-                transform.localScale = new Vector2(wallJumpingDirection, 1f);
-            }
-        }
+        //throw new System.NotImplementedException();
     }
 
+    public override void Interact()
+    {
+        RaycastHit2D raycastHit = GetRay(boxMask);
+
+        if (raycastHit)
+        {
+            SwitchBody(raycastHit);
+        }
+    }
+    #endregion
+
+    #region Actions
     void JumpAction()
     {
         if (jumpTimes < jumpLimit)
@@ -174,6 +194,40 @@ public class PlayerMovement : Controlable
             jumpTimes++;
 
             jumpBufferCounter = 0f;
+        }
+    }
+    #endregion
+
+    #region WallAction
+    void WallSlide()
+    {
+        if (IsWalled() && !IsGrounded() && horizontal != 0f)
+        {
+            isWallSliding = true;
+            SetVelocity(new Vector2(body.velocity.x, Mathf.Clamp(body.velocity.y, -wallSlidingSpeed, float.MaxValue)));
+        }
+        else
+        {
+            isWallSliding = false;
+        }
+    }
+
+    void WallJumpAction()
+    {
+        if (jumpTimes < jumpLimit)
+        {
+            isWallJumping = true;
+            SetVelocity(new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y));
+
+            wallJumpingCounter = 0f;
+
+            Invoke(nameof(StopWallJumping), walllJumpingDuration);
+
+            if (direction != wallJumpingDirection)
+            {
+                direction = wallJumpingDirection;
+                SetLocalScale(new Vector2(direction, 1f));
+            }
         }
     }
 
@@ -188,7 +242,7 @@ public class PlayerMovement : Controlable
         {
             jumpTimes = 0;
             isWallJumping = false;
-            wallJumpingDirection = -transform.localScale.x;
+            wallJumpingDirection = -direction;
             wallJumpingCounter = wallJumpingTime;
 
             CancelInvoke(nameof(StopWallJumping));
@@ -199,9 +253,21 @@ public class PlayerMovement : Controlable
         }
     }
 
+    #endregion
+
+    #region CheckEnvironment
+    private RaycastHit2D GetRay(LayerMask mask)
+    {
+        Vector2 dir = Vector2.right * direction;
+        Vector2 rayOrigin = (Vector2)transform.position + dir * _collider.bounds.extents.x;
+        RaycastHit2D raycastHit = Physics2D.Raycast(rayOrigin, dir, rayLength, mask);
+
+        return raycastHit;
+    }
+
     bool IsGrounded()
     {
-        Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - groundBoxSize.y / 2, 0.0f);
+        Vector3 bottom = _collider.bounds.center - new Vector3(0.0f, _collider.bounds.extents.y - groundBoxSize.y / 2, 0.0f);
         RaycastHit2D raycastHit = Physics2D.BoxCast(bottom, groundBoxSize, 0f, Vector2.down, 0.1f, groundMask);
 
         return raycastHit.collider != null;
@@ -209,29 +275,25 @@ public class PlayerMovement : Controlable
 
     bool IsWalled()
     {
-        Vector3 wallCheck = boxCollider.bounds.center
-            + new Vector3((boxCollider.bounds.extents.x - wallBoxSize.x / 2f) * transform.localScale.x, 0.0f, 0.0f);
-        RaycastHit2D raycastHit = Physics2D.BoxCast(wallCheck, wallBoxSize, 0f, Vector2.right * transform.localScale.x, 0.1f, wallMask);
+        Vector3 wallCheck = _collider.bounds.center
+            + new Vector3((_collider.bounds.extents.x - wallBoxSize.x / 2f) * direction, 0.0f, 0.0f);
+        RaycastHit2D raycastHit = Physics2D.BoxCast(wallCheck, wallBoxSize, 0f, Vector2.right * direction, 0.1f, wallMask);
 
         return raycastHit.collider != null;
     }
+    #endregion
 
-    void WallSlide()
-    {
-        if (IsWalled() && !IsGrounded() && horizontal != 0f)
-        {
-            isWallSliding = true;
-            SetVelocity(new Vector2(body.velocity.x, Mathf.Clamp(body.velocity.y, -wallSlidingSpeed, float.MaxValue)));
-        }
-        else
-        {
-            isWallSliding = false;
-        }
-    }
-
+    #region BasicMethods
     public void SetVelocity(Vector2 velocity)
     {
         body.velocity = velocity;
+    }
+
+    public void SetRigidbody(bool v)
+    {
+        transform.GetComponent<SpriteRenderer>().enabled = v;
+        body.simulated = v;
+        _collider.enabled = v;
     }
 
     void SetGravity(float amount)
@@ -239,6 +301,14 @@ public class PlayerMovement : Controlable
         body.gravityScale = amount;
     }
 
+    public void SetLocalScale(Vector2 scale)
+    {
+        transform.localScale = scale;
+    }
+
+    #endregion
+
+    #region CannonAction
     void ToCannon(Collision2D collision)
     {
         CannonControlable target = collision.gameObject.GetComponent<CannonControlable>();
@@ -247,7 +317,9 @@ public class PlayerMovement : Controlable
         transform.SetParent(target.Launcher);
         GameManager.Inst.Controller.ChangeControlTarget(target);
     }
+    #endregion
 
+    #region GateAction
     public void ToGate(GateAction gate)
     {
         StartCoroutine(ToGateCoroutine(gate));
@@ -264,7 +336,7 @@ public class PlayerMovement : Controlable
         body.isKinematic = true;
         body.freezeRotation = true;
         GameManager.Inst.Controller.ChangeControlTarget(gate);
-        transform.localScale = Vector2.one;
+        SetLocalScale(Vector2.one);
 
         while (Vector3.Distance(transform.position, gate.transform.position) > 0.1f)
         {
@@ -283,7 +355,7 @@ public class PlayerMovement : Controlable
             transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
         }
 
-        cameraController.CamTarget = null;
+        cameraController.SetCamTarget(null);
         transform.position = gate.ConnectedGate.transform.position;
     }
 
@@ -298,31 +370,26 @@ public class PlayerMovement : Controlable
             transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
         }
 
-        cameraController.CamTarget = transform;
-        transform.localScale = Vector2.one;
+        SetLocalScale(Vector2.one);
         transform.rotation = Quaternion.identity;
         body.freezeRotation = false;
         body.isKinematic = false;
         SetGravity(2.5f);
         GameManager.Inst.Controller.ChangeControlTarget(this);
     }
+    #endregion
 
-    public void SetRigidbody(bool v)
-    {
-        transform.GetComponent<SpriteRenderer>().enabled = v;
-        body.simulated = v;
-        boxCollider.enabled = v;
-    }
+    #region Collisions
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Vector3 bottom = boxCollider.bounds.center - new Vector3(0.0f, boxCollider.bounds.extents.y - groundBoxSize.y / 2f, 0.0f);
+        Vector3 bottom = _collider.bounds.center - new Vector3(0.0f, _collider.bounds.extents.y - groundBoxSize.y / 2f, 0.0f);
         Gizmos.DrawCube(bottom, groundBoxSize);
 
         Gizmos.color = Color.blue;
-        Vector3 wallCheck = boxCollider.bounds.center
-            + new Vector3((boxCollider.bounds.extents.x - wallBoxSize.x / 2f) * transform.localScale.x, 0.0f, 0.0f);
+        Vector3 wallCheck = _collider.bounds.center
+            + new Vector3((_collider.bounds.extents.x - wallBoxSize.x / 2f) * direction, 0.0f, 0.0f);
 
         Gizmos.DrawCube(wallCheck, wallBoxSize);
     }
@@ -340,13 +407,46 @@ public class PlayerMovement : Controlable
         }
     }
 
-    public override void Rotate(Vector2 input)
+    #endregion
+
+    private void SwitchBody(RaycastHit2D raycastHit)
     {
-        //throw new System.NotImplementedException();
+        float dir = 1f;
+        mask.position = 0.5f * (raycastHit.transform.position + transform.position);
+
+        if (transform.position.x > raycastHit.transform.position.x)
+        {
+            dir = -dir;
+        }
+        mask.localScale = new Vector2(2f * dir, 2f);
+
+        var maskAction = mask.GetComponent<MaskAction>();
+
+        maskAction.GetPlayer(this);
+        maskAction.GetSwitchTarget(raycastHit.transform);
+        maskAction.RotateToDown();
+
+        // Player inactivated
+        GameManager.Inst.Controller.ChangeControlTarget(null);
+        showText.text = "";
+        enabled = false;
     }
 
-    public override void Interact()
+    public void SetOppositeDirection()
     {
-        //throw new System.NotImplementedException();
+        SetLocalScale(new Vector2(direction, 1));
+    }
+
+    private void EnableMessages(string message, LayerMask mask)
+    {
+        if (GetRay(mask))
+        {
+            ShowMessages.position = GetRay(mask).point;
+            showText.text = message;
+        }
+        else
+        {
+            showText.text = "";
+        }
     }
 }

@@ -24,7 +24,7 @@ public class PlayerController : Controller
 
     private void InputInteractAction()
     {
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetButtonDown("Interact"))
         {
             if (controlTarget != null)
                 controlTarget.Interact();

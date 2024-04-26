@@ -9,25 +9,31 @@ public class RotatingPlatform : Platform
     Coroutine CoroutineAngle = null;
     WaitForSeconds waitTime = new WaitForSeconds(2f);
 
-    IEnumerator RotatingToPosition()
+    IEnumerator RotatingToPosition(Vector3 dir)
     {
+        float Angle = Vector3.Angle(transform.up, dir);
+        float rotDir = 1.0f;
+
+        if (Vector3.Dot(transform.right, dir) > 0.0f)
+        {
+            rotDir = -rotDir;
+        }
+
         yield return waitTime;
-        while (Mathf.Abs(transform.rotation.eulerAngles.z) > 0.1f)
+
+        while (Angle > Mathf.Epsilon)
         {
             Debug.Log("rott");
-            float Angle = Vector3.Angle(transform.up, direction);
-            float rotDir = 1.0f;
 
-            if (Vector3.Dot(transform.right, direction) > 0.0f)
-            {
-                rotDir = -rotDir;
-            }
             float delta = rotSpeed * Time.deltaTime;
 
             if (delta > Angle)
             {
                 delta = Angle;
             }
+
+            Angle -= delta;
+
             transform.Rotate(Vector3.forward * delta * rotDir, Space.World);
 
             yield return null;
@@ -55,6 +61,6 @@ public class RotatingPlatform : Platform
     private void RotateToVector()
     {
         StopRotating();
-        CoroutineAngle = StartCoroutine(RotatingToPosition());
+        CoroutineAngle = StartCoroutine(RotatingToPosition(direction));
     }
 }

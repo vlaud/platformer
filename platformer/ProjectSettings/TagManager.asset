@@ -41,6 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Mask
+    uniqueID: 2616155989
+    locked: 0
   - name: Cannon
     uniqueID: 1814652877
     locked: 0
