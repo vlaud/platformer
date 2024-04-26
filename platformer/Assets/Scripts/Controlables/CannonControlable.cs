@@ -52,6 +52,7 @@ public class CannonControlable : Controlable
         player?.SetRigidbody(true);
         player?.ChangeState(PlayerMovement.PlayerState.Flying);
         GameManager.Inst.Controller.ChangeControlTarget(null);
+        GameManager.Inst.CameraController.SetCamTarget(GameManager.Inst.Player.transform);
 
         if (cannonBall.GetComponent<Rigidbody2D>() != null)
             cannonBall.GetComponent<Rigidbody2D>().AddForce(shootPos.up * shootPower, ForceMode2D.Impulse);

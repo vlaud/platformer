@@ -48,6 +48,7 @@ public class MaskAction : MonoBehaviour
         player.transform.position = switchTarget.position;
         switchTarget.position = temp;
 
+        // player activate
         GameManager.Inst.Controller.ChangeControlTarget(player);
         player.enabled = true;
         player.SetOppositeDirection();
@@ -59,6 +60,7 @@ public class MaskAction : MonoBehaviour
         float rotDir = -1f;
 
         SetChildActive(true);
+        GameManager.Inst.CameraController.SetCamTarget(null);
 
         while (Angle > Mathf.Epsilon)
         {
@@ -75,9 +77,12 @@ public class MaskAction : MonoBehaviour
 
             transform.Rotate(Vector3.forward * delta * rotDir, Space.World);
 
+            GameManager.Inst.CameraController.CamDampMove(switchTarget);
+
             yield return null;
         }
 
+        GameManager.Inst.CameraController.SetCamTarget(player.transform);
         SwitchPosition();
         SetChildActive(false);
         transform.rotation = Quaternion.identity;

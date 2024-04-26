@@ -74,7 +74,7 @@ public class PlayerMovement : Controlable
 
         if (GameManager.Inst.Player != this)
         {
-            GetComponent<PlayerMovement>().enabled = false;
+            enabled = false;
         }
     }
 
@@ -396,6 +396,8 @@ public class PlayerMovement : Controlable
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!enabled) return;
+
         ChangeState(PlayerState.Moving);
 
         if (GameManager.Inst.Controller.controlTarget == null)
@@ -429,6 +431,7 @@ public class PlayerMovement : Controlable
         // Player inactivated
         GameManager.Inst.Controller.ChangeControlTarget(null);
         showText.text = "";
+        SetVelocity(Vector2.zero);
         enabled = false;
     }
 
