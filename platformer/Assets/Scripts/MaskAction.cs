@@ -61,12 +61,13 @@ public class MaskAction : MonoBehaviour
 
         SetChildActive(true);
         GameManager.Inst.CameraController.SetCamTarget(null);
+        GameManager.Inst.PauseGame();
 
         while (Angle > Mathf.Epsilon)
         {
             Debug.Log("rott");
 
-            float delta = rotSpeed * Time.deltaTime;
+            float delta = rotSpeed * GameManager.Inst.GameUnscaledDeltaTime;
 
             if (delta > Angle)
             {
@@ -82,6 +83,7 @@ public class MaskAction : MonoBehaviour
             yield return null;
         }
 
+        GameManager.Inst.StartGame();
         GameManager.Inst.CameraController.SetCamTarget(player.transform);
         SwitchPosition();
         SetChildActive(false);

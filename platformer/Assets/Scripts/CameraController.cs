@@ -57,8 +57,8 @@ public class CameraController : MonoBehaviour
     {
         var body = camTarget.GetComponent<Rigidbody2D>();
         
-        lookAhead.x = Mathf.Lerp(lookAhead.x, (aheadDistance.x * camTarget.localScale.x), Time.deltaTime * cameraSpeed);
-        lookAhead.y = Mathf.Lerp(lookAhead.y, aheadDistance.y * (body.velocity.y < dropYVelocity ? -1f : 1f), Time.deltaTime * cameraSpeed);
+        lookAhead.x = Mathf.Lerp(lookAhead.x, (aheadDistance.x * camTarget.localScale.x), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
+        lookAhead.y = Mathf.Lerp(lookAhead.y, aheadDistance.y * (body.velocity.y < dropYVelocity ? -1f : 1f), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
 
         transform.position = new Vector3(camTarget.position.x + lookAhead.x, camTarget.position.y + lookAhead.y, transform.position.z);
     }
@@ -70,7 +70,7 @@ public class CameraController : MonoBehaviour
         float rotDir = rot <= 0f ? 1f : -1f;
 
         Vector3 desiredPos = new Vector3(camTarget.position.x + aheadDistance.x * rotDir, camTarget.position.y + aheadDistance.y, transform.position.z);
-        transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * cameraSpeed);
+        transform.position = Vector3.Lerp(transform.position, desiredPos, GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
 
         lookAhead = transform.position - cannon.ShootPos.position;
     }
@@ -87,7 +87,7 @@ public class CameraController : MonoBehaviour
         float rotDir = targetX < playerX ? 1f : -1f;
 
         Vector3 desiredPos = new Vector3(camTarget.position.x + aheadDistance.x * rotDir, camTarget.position.y + aheadDistance.y, transform.position.z);
-        transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * cameraSpeed);
+        transform.position = Vector3.Lerp(transform.position, desiredPos, GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
     }
 
     public void CamDampMove(Transform target)

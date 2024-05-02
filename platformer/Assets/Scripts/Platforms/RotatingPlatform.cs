@@ -25,7 +25,7 @@ public class RotatingPlatform : Platform
         {
             Debug.Log("rott");
 
-            float delta = rotSpeed * Time.deltaTime;
+            float delta = rotSpeed * GameManager.Inst.GameDeltaTime;
 
             if (delta > Angle)
             {

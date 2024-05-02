@@ -92,7 +92,7 @@ public class PlayerMovement : Controlable
             }
             else
             {
-                if (coyoteTimeCounter > 0f) coyoteTimeCounter -= Time.deltaTime;
+                if (coyoteTimeCounter > 0f) coyoteTimeCounter -= GameManager.Inst.GameDeltaTime;
                 if (coyoteTimeCounter < 0f)
                 {
                     jumpTimes++;
@@ -104,7 +104,7 @@ public class PlayerMovement : Controlable
         WallSlide();
         WallJump();
 
-        jumpBufferCounter -= Time.deltaTime;
+        jumpBufferCounter -= GameManager.Inst.GameDeltaTime;
 
         if (jumpBufferCounter > 0f)
             JumpAction();
@@ -148,7 +148,7 @@ public class PlayerMovement : Controlable
                 SetVelocity(new Vector2(horizontal * (speed - _ground.Friction), body.velocity.y));
                 break;
             case PlayerState.Flying:
-                desireX = Mathf.Lerp(desireX, horizontal, speed * Time.deltaTime);
+                desireX = Mathf.Lerp(desireX, horizontal, speed * GameManager.Inst.GameDeltaTime);
                 float x = desireX + body.velocity.x;
                 x = Mathf.Clamp(x, -speed, speed);
                 SetVelocity(new Vector2(x, body.velocity.y));
@@ -249,7 +249,7 @@ public class PlayerMovement : Controlable
         }
         else
         {
-            wallJumpingCounter -= Time.deltaTime;
+            wallJumpingCounter -= GameManager.Inst.GameDeltaTime;
         }
     }
 
@@ -342,7 +342,7 @@ public class PlayerMovement : Controlable
         {
             Debug.Log("Moving");
             yield return null;
-            transform.position += (gate.transform.position - transform.position).normalized * Time.deltaTime * gateMoveSpeed;
+            transform.position += (gate.transform.position - transform.position).normalized * GameManager.Inst.GameDeltaTime * gateMoveSpeed;
         }
 
         yield return new WaitForSeconds(0.5f);
@@ -351,8 +351,8 @@ public class PlayerMovement : Controlable
         {
             yield return null;
             Debug.Log("spin");
-            transform.localScale -= scaleChange * Time.deltaTime * scaleSpeed;
-            transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
+            transform.localScale -= scaleChange * GameManager.Inst.GameDeltaTime * scaleSpeed;
+            transform.Rotate(Vector3.forward * GameManager.Inst.GameDeltaTime * -scaleRotSpeed, Space.World);
         }
 
         cameraController.SetCamTarget(null);
@@ -366,8 +366,8 @@ public class PlayerMovement : Controlable
             cameraController.CamDampMove(GameManager.Inst.Player.transform);
             yield return null;
 
-            transform.localScale += scaleChange * Time.deltaTime * scaleSpeed;
-            transform.Rotate(Vector3.forward * Time.deltaTime * -scaleRotSpeed, Space.World);
+            transform.localScale += scaleChange * GameManager.Inst.GameDeltaTime * scaleSpeed;
+            transform.Rotate(Vector3.forward * GameManager.Inst.GameDeltaTime * -scaleRotSpeed, Space.World);
         }
 
         SetLocalScale(Vector2.one);

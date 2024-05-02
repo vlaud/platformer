@@ -63,7 +63,7 @@ public class BlackholeGravity : MonoBehaviour
 
     void SetVelocityByLerp(Rigidbody2D body, Vector2 velocity)
     {
-        body.velocity = Vector2.Lerp(body.velocity, velocity, Time.deltaTime * 20f);
+        body.velocity = Vector2.Lerp(body.velocity, velocity, GameManager.Inst.GameDeltaTime * 20f);
     }
 
     void LerpVelocity(Collider2D x, bool IsElipticalOrbit)
@@ -87,13 +87,13 @@ public class BlackholeGravity : MonoBehaviour
         {
             // Eliptic orbit = G * M  ( 2 / r + 1 / a) where G is the gravitational constant, M is the mass of the central object, r is the distance between the two bodies
             // and a is the length of the semi major axis (!!! NOT GAMEOBJECT a !!!)
-            rigid.velocity += (Vector2)rigid.transform.right * Time.deltaTime * Mathf.Sqrt((PullForce * BlackholeMass) * ((2 / r) - (1 / (r * 1.5f))));
+            rigid.velocity += (Vector2)rigid.transform.right * GameManager.Inst.GameDeltaTime * Mathf.Sqrt((PullForce * BlackholeMass) * ((2 / r) - (1 / (r * 1.5f))));
         }
         else
         {
             //Circular Orbit = ((G * M) / r)^0.5, where G = gravitational constant, M is the mass of the central object and r is the distance between the two objects
             //We ignore the mass of the orbiting object when the orbiting object's mass is negligible, like the mass of the earth vs. mass of the sun
-            rigid.velocity += (Vector2)rigid.transform.right * Time.deltaTime * Mathf.Sqrt((PullForce * BlackholeMass) / r);
+            rigid.velocity += (Vector2)rigid.transform.right * GameManager.Inst.GameDeltaTime * Mathf.Sqrt((PullForce * BlackholeMass) / r);
         }
     }
 
@@ -122,7 +122,7 @@ public class BlackholeGravity : MonoBehaviour
 
                 force = Mathf.Clamp(force, MinimumForce, force);
 
-                rigid.AddForce(ForceDir.normalized * force * Time.deltaTime);
+                rigid.AddForce(ForceDir.normalized * force * GameManager.Inst.GameDeltaTime);
             }
 
             yield return new WaitForSeconds(RefreshRate);
