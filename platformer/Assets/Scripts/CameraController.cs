@@ -95,7 +95,7 @@ public class CameraController : MonoBehaviour
         float z = transform.position.z;
         Vector3 playerPos = target.position;
         Vector3 temp = new Vector3(playerPos.x + lookAhead.x, playerPos.y + lookAhead.y, playerPos.z);
-        Vector3 desirePos = Vector3.SmoothDamp(transform.position, temp, ref velocity, gateCameraSpeed);
+        Vector3 desirePos = Vector3.SmoothDamp(transform.position, temp, ref velocity, gateCameraSpeed, 1000f, GameManager.Inst.GameUnscaledDeltaTime);
         desirePos.z = z;
         transform.position = desirePos;
     }
