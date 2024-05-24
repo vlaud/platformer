@@ -63,6 +63,8 @@ public class MaskAction : MonoBehaviour
         GameManager.Inst.CameraController.SetCamTarget(null);
         GameManager.Inst.PauseGame();
 
+        player.InActivatePlayer();
+
         while (Angle > Mathf.Epsilon)
         {
             Debug.Log("rott");
@@ -90,8 +92,19 @@ public class MaskAction : MonoBehaviour
         transform.rotation = Quaternion.identity;
     }
 
-    public void RotateToDown()
+    public void RotateToDown(Vector3? startDir = null, Vector3? dir = null)
     {
+        if (startDir != null)
+        {
+            float Angle = Vector3.Angle(transform.up, (Vector3)startDir);
+            transform.Rotate(Vector3.forward * Angle, Space.World);
+        }
+        if (dir != null)
+        {
+            StartCoroutine(RotatingToPosition((Vector3)dir));
+            return;
+        }
+        Debug.Log("null");
         StartCoroutine(RotatingToPosition(direction));
     }
 }

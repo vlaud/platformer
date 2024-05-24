@@ -58,6 +58,10 @@ public class PlayerMovement : Controlable
     [Header("¸Þ½ÃÁö")]
     [SerializeField] private Transform ShowMessages;
     [SerializeField] private TMPro.TMP_Text showText;
+    [SerializeField] private RaycastHit2D? raycast;
+    [SerializeField] private Vector2 middle;
+    [SerializeField] private Vector2 hitNormal;
+    [SerializeField] private Vector2 oppositeNormal;
 
     public Rigidbody2D PlayerBody => body;
     public Collider2D PlayerCollider => _collider;
@@ -173,11 +177,10 @@ public class PlayerMovement : Controlable
 
     public override void Interact()
     {
-        RaycastHit2D raycastHit = GetRay(boxMask);
-
-        if (raycastHit)
+        if (raycast != null)
         {
-            SwitchBody(raycastHit);
+            if (middle == Vector2.zero) return;
+            SwitchBody(raycast, middle);
         }
     }
     #endregion
@@ -256,13 +259,51 @@ public class PlayerMovement : Controlable
     #endregion
 
     #region CheckEnvironment
-    private RaycastHit2D GetRay(LayerMask mask)
+    private RaycastHit2D? GetRay(LayerMask mask, Vector2 originMiddle, out Vector2 middle)
     {
         Vector2 dir = Vector2.right * direction;
         Vector2 rayOrigin = (Vector2)transform.position + dir * _collider.bounds.extents.x;
         RaycastHit2D raycastHit = Physics2D.Raycast(rayOrigin, dir, rayLength, mask);
 
-        return raycastHit;
+        middle = originMiddle;
+
+        if (raycastHit)
+        {
+            RaycastHit2D opposite = Physics2D.Raycast(raycastHit.point, -dir, rayLength + 0.1f, 1 << LayerMask.NameToLayer("Player"));
+
+            if (opposite)
+            {
+                VectorDeadValue(raycastHit.normal, out hitNormal, 0.001f);
+                VectorDeadValue(opposite.normal, out oppositeNormal, 0.001f);
+                if (hitNormal.y + oppositeNormal.y == 0f)
+                {
+                    middle = Vector2.up;
+                }
+                else
+                {
+                    middle = Vector2.Lerp(hitNormal, oppositeNormal, 0.5f).normalized;
+                }
+                
+                Vector2 midPos = 0.5f * (raycastHit.point + opposite.point);
+                if (middle.y < 0f) middle = -middle;
+                Debug.DrawRay(midPos, middle, Color.red);
+                Debug.DrawLine(rayOrigin, raycastHit.point, Color.red);
+                return raycastHit;
+            }
+        }
+
+        Debug.DrawRay(rayOrigin, dir * rayLength, Color.blue);
+
+        return null;
+    }
+
+    private void VectorDeadValue(Vector2 origin, out Vector2 v, float dead)
+    {
+        v = origin;
+        if (Mathf.Abs(v.x) < dead)
+            v.x = 0f;
+        if (Mathf.Abs(v.y) < dead)
+            v.y = 0f;
     }
 
     bool IsGrounded()
@@ -411,12 +452,16 @@ public class PlayerMovement : Controlable
 
     #endregion
 
-    private void SwitchBody(RaycastHit2D raycastHit)
+    private void SwitchBody(RaycastHit2D? raycastHit, Vector2? desiredDir = null)
     {
-        float dir = 1f;
-        mask.position = 0.5f * (raycastHit.transform.position + transform.position);
+        if (raycastHit == null) return;
 
-        if (transform.position.x > raycastHit.transform.position.x)
+        RaycastHit2D newHit = raycastHit.Value;
+
+        float dir = 1f;
+        mask.position = 0.5f * (newHit.transform.position + transform.position);
+
+        if (transform.position.x > newHit.transform.position.x)
         {
             dir = -dir;
         }
@@ -425,9 +470,12 @@ public class PlayerMovement : Controlable
         var maskAction = mask.GetComponent<MaskAction>();
 
         maskAction.GetPlayer(this);
-        maskAction.GetSwitchTarget(raycastHit.transform);
-        maskAction.RotateToDown();
+        maskAction.GetSwitchTarget(newHit.transform);
+        maskAction.RotateToDown(desiredDir, -desiredDir);
+    }
 
+    public void InActivatePlayer()
+    {
         // Player inactivated
         GameManager.Inst.Controller.ChangeControlTarget(null);
         showText.text = "";
@@ -442,9 +490,11 @@ public class PlayerMovement : Controlable
 
     private void EnableMessages(string message, LayerMask mask)
     {
-        if (GetRay(mask))
+        raycast = GetRay(mask, middle, out middle);
+        if (raycast != null)
         {
-            ShowMessages.position = GetRay(mask).point;
+            var newHit = raycast.Value;
+            ShowMessages.position = newHit.point;
             showText.text = message;
         }
         else
