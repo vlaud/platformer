@@ -7,7 +7,7 @@ public class InputManager : MonoBehaviour
     [field: Header("타깃")]
     // controlTarget variable
     [SerializeField]
-    private Controlable controlTarget;
+    private Controller controller;
     // variable to store keycodes with icommand
     private Dictionary<KeyCode, ICommand> keyMapping = new Dictionary<KeyCode, ICommand>();
     // variable to store reset keymapping
@@ -23,8 +23,6 @@ public class InputManager : MonoBehaviour
     // Vector2 variable to store horizontal and vertical axis
     [SerializeField]
     private Vector2 moveAmount;
-    [SerializeField]
-    private Vector2 inputAmount;
 
     // function to add keymapping
     public void AddKeyMapping(KeyCode key, ICommand command, ICommand resetCommand)
@@ -52,16 +50,24 @@ public class InputManager : MonoBehaviour
         }
     }
 
-
     private void Awake()
     {
         // when controlTarget is null, set controlTarget to player
-        if (controlTarget == null)
-            controlTarget = FindObjectOfType<PlayerMovement>();
+        if (controller == null)
+            controller = FindObjectOfType<Controller>();
+
+        var player = FindObjectOfType<PlayerMovement>();
 
         // add keymapping
-        AddKeyMapping(KeyCode.E, new InteractCommand(controlTarget), new InteractCommand(controlTarget));
-        AddKeyMapping(KeyCode.Space, new JumpCommand(controlTarget), new JumpCommand(controlTarget));
+        AddKeyMapping(KeyCode.E, new InteractCommand(player), new InteractCommand(player));
+        AddKeyMapping(KeyCode.Space, new JumpCommand(player), new JumpCommand(player));
+    }
+
+    private void Update()
+    {
+        moveAmount = new Vector2(horizontal.GetAxis(), vertical.GetAxis());
+
+        controller.controlTarget?.Move(moveAmount);
     }
 }
 
@@ -78,7 +84,6 @@ public struct Axis
     public float digitalReturnSpeed;
     [SerializeField]
     private float value;
-    private float offset;
 
     public Axis(KeyCode negative, KeyCode positive, float dead, float autoReturnSpeed, float digitalReturnSpeed)
     {
@@ -88,7 +93,6 @@ public struct Axis
         this.autoReturnSpeed = autoReturnSpeed;
         this.digitalReturnSpeed = digitalReturnSpeed;
         value = 0f;
-        offset = 0.5f;
     }
 
     // function to get axis value, if digitalReturnSpeed is higher, value changes faster
@@ -97,25 +101,30 @@ public struct Axis
     // return float value
     public float GetAxis()
     {
+        if (Input.GetKeyDown(negative) || Input.GetKeyDown(positive))
+        {
+            value = 0f;
+        }
+
         if (Input.GetKey(negative))
         {
-            value -= digitalReturnSpeed * Time.deltaTime * offset;
+            value -= digitalReturnSpeed * Time.deltaTime;
         }
         else if (Input.GetKey(positive))
         {
-            value += digitalReturnSpeed * Time.deltaTime * offset;
+            value += digitalReturnSpeed * Time.deltaTime;
         }
         else
         {
             if (value > 0)
             {
-                value -= autoReturnSpeed * Time.deltaTime * offset;
+                value -= autoReturnSpeed * Time.deltaTime;
                 if (value < 0)
                     value = 0;
             }
             else if (value < 0)
             {
-                value += autoReturnSpeed * Time.deltaTime * offset;
+                value += autoReturnSpeed * Time.deltaTime;
                 if (value > 0)
                     value = 0;
             }

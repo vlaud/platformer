@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - CannonCore
   layers:
   - Default
   - TransparentFX
@@ -52,4 +53,7 @@ TagManager:
     locked: 0
   - name: Ground
     uniqueID: 3999247775
+    locked: 0
+  - name: Messages
+    uniqueID: 2461094413
     locked: 0

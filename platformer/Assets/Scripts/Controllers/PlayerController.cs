@@ -4,7 +4,7 @@ public class PlayerController : Controller
 {
     void Update()
     {
-        InputMoveAxis();
+        //InputMoveAxis();
         InputRotateAxis();
         InputInteractAction();
         InputJumpAction();

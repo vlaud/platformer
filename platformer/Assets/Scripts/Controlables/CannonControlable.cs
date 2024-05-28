@@ -1,6 +1,7 @@
+using TMPro;
 using UnityEngine;
 
-public class CannonControlable : Controlable
+public class CannonControlable : Controlable, IObjectAction
 {
     [SerializeField] private Transform launcher;
     [SerializeField] private Transform shootPos;
@@ -9,6 +10,10 @@ public class CannonControlable : Controlable
     [SerializeField] float rot;
     [SerializeField] float shootPower = 30f;
     [SerializeField] PlayerMovement player;
+
+    [Header("¸Þ½ÃÁö")]
+    [SerializeField] private Transform _messages;
+    [SerializeField] private TMP_Text showText;
 
     public Transform Launcher => launcher;
     public Transform ShootPos => shootPos;
@@ -67,5 +72,27 @@ public class CannonControlable : Controlable
 
         if (cannonball.GetComponent<PlayerMovement>() != null)
             player = cannonball.GetComponent<PlayerMovement>();
+    }
+
+    public void GetTextObject(Transform target, TMP_Text showText)
+    {
+        _messages = target;
+        this.showText = showText;
+    }
+
+    public void SetMessages()
+    {
+        if (showText == null) return;
+        showText.text = "GetIn";
+    }
+
+    public void SetTextAppear(bool v)
+    {
+        showText.gameObject.SetActive(v);
+    }
+
+    public void SetTextPosition(Vector3 position)
+    {
+        _messages.position = position;
     }
 }

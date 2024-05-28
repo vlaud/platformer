@@ -357,7 +357,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: -1833872883
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!1 &379953837
@@ -470,6 +470,8 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 1216
+  _messages: {fileID: 0}
+  showText: {fileID: 0}
 --- !u!212 &379953841
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -800,6 +802,7 @@ GameObject:
   - component: {fileID: 454957720}
   - component: {fileID: 454957722}
   - component: {fileID: 454957723}
+  - component: {fileID: 454957724}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -866,6 +869,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controlTarget: {fileID: 0}
+  horizontal:
+    negative: 97
+    positive: 100
+    Dead: 0.001
+    autoReturnSpeed: 3
+    digitalReturnSpeed: 3
+    value: 0
+  vertical:
+    negative: 115
+    positive: 119
+    Dead: 0.001
+    autoReturnSpeed: 3
+    digitalReturnSpeed: 3
+    value: 0
+  moveAmount: {x: 0, y: 0}
+  inputAmount: {x: 0, y: 0}
+--- !u!114 &454957724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 454957719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 735deed69e051f04a9e9f5ffd52140b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _messages: {fileID: 1812775306}
+  showText: {fileID: 685001552}
 --- !u!1 &457137891
 GameObject:
   m_ObjectHideFlags: 0
@@ -1284,6 +1317,8 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 1216
+  _messages: {fileID: 0}
+  showText: {fileID: 0}
 --- !u!331 &585186944
 SpriteMask:
   m_ObjectHideFlags: 0
@@ -1884,6 +1919,8 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 1216
+  _messages: {fileID: 0}
+  showText: {fileID: 0}
 --- !u!212 &1084615225
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2012,6 +2049,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1096006427}
   - component: {fileID: 1096006426}
+  - component: {fileID: 1096006433}
   - component: {fileID: 1096006429}
   - component: {fileID: 1096006430}
   - component: {fileID: 1096006431}
@@ -2203,13 +2241,19 @@ MonoBehaviour:
   gateMoveSpeed: 3
   scaleSpeed: 10
   scaleRotSpeed: 1000
+  cannonMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  cannonCoreTag: CannonCore
   boxMask:
     serializedVersion: 2
     m_Bits: 512
   rayLength: 1
   mask: {fileID: 2004272915}
-  ShowMessages: {fileID: 1812775306}
-  showText: {fileID: 685001552}
+  rayCheck: {fileID: 0}
+  middle: {x: 0, y: 0}
+  hitNormal: {x: 0, y: 0}
+  oppositeNormal: {x: 0, y: 0}
   State: 0
 --- !u!114 &1096006430
 MonoBehaviour:
@@ -2288,6 +2332,28 @@ SpriteMask:
   m_BackSortingOrder: 0
   m_IsCustomRangeActive: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1096006433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1096006424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e5ab81c72148ab4b969411e972886c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  middle: {x: 0, y: 0}
+  hitNormal: {x: 0, y: 0}
+  oppositeNormal: {x: 0, y: 0}
+  midPos: {x: 0, y: 0}
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 2560
+  rayLength: 1
+  playerMovement: {fileID: 0}
+  _collider: {fileID: 0}
 --- !u!1 &1133943999
 GameObject:
   m_ObjectHideFlags: 0

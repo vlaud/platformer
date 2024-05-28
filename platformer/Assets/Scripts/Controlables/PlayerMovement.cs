@@ -19,6 +19,7 @@ public class PlayerMovement : Controlable
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private float horizontal;
     [SerializeField] private float direction = 1f;
+    public float Direction => direction;
 
     private Rigidbody2D body;
     private Ground _ground;
@@ -50,15 +51,17 @@ public class PlayerMovement : Controlable
     [SerializeField] private float scaleSpeed = 3f;
     [SerializeField] private float scaleRotSpeed = 1000f;
 
+    [Header("대포")]
+    [SerializeField] private LayerMask cannonMask;
+    [SerializeField] private string cannonCoreTag = "CannonCore";
+
     [Header("박스")]
     [SerializeField] private LayerMask boxMask;
     [SerializeField] private float rayLength = 1f;
     [SerializeField] private Transform mask;
 
-    [Header("메시지")]
-    [SerializeField] private Transform ShowMessages;
-    [SerializeField] private TMPro.TMP_Text showText;
-    [SerializeField] private RaycastHit2D? raycast;
+    [Header("레이캐스트")]
+    [SerializeField] private PlayerShowMessageOnRaycast rayCheck;
     [SerializeField] private Vector2 middle;
     [SerializeField] private Vector2 hitNormal;
     [SerializeField] private Vector2 oppositeNormal;
@@ -75,6 +78,7 @@ public class PlayerMovement : Controlable
         body = GetComponent<Rigidbody2D>();
         _ground = GetComponent<Ground>();
         jumpTimes = jumpLimit;
+        rayCheck = GetComponent<PlayerShowMessageOnRaycast>();
 
         if (GameManager.Inst.Player != this)
         {
@@ -112,8 +116,6 @@ public class PlayerMovement : Controlable
 
         if (jumpBufferCounter > 0f)
             JumpAction();
-
-        EnableMessages("Switch", boxMask);
     }
 
     public void ChangeState(PlayerState s)
@@ -177,7 +179,9 @@ public class PlayerMovement : Controlable
 
     public override void Interact()
     {
-        if (raycast != null)
+        rayCheck.Interact();
+        RaycastHit2D raycast = GetRay(boxMask, middle, out middle);
+        if (raycast)
         {
             if (middle == Vector2.zero) return;
             SwitchBody(raycast, middle);
@@ -259,7 +263,7 @@ public class PlayerMovement : Controlable
     #endregion
 
     #region CheckEnvironment
-    private RaycastHit2D? GetRay(LayerMask mask, Vector2 originMiddle, out Vector2 middle)
+    private RaycastHit2D GetRay(LayerMask mask, Vector2 originMiddle, out Vector2 middle)
     {
         Vector2 dir = Vector2.right * direction;
         Vector2 rayOrigin = (Vector2)transform.position + dir * _collider.bounds.extents.x;
@@ -283,7 +287,7 @@ public class PlayerMovement : Controlable
                 {
                     middle = Vector2.Lerp(hitNormal, oppositeNormal, 0.5f).normalized;
                 }
-                
+
                 Vector2 midPos = 0.5f * (raycastHit.point + opposite.point);
                 if (middle.y < 0f) middle = -middle;
                 Debug.DrawRay(midPos, middle, Color.red);
@@ -294,7 +298,7 @@ public class PlayerMovement : Controlable
 
         Debug.DrawRay(rayOrigin, dir * rayLength, Color.blue);
 
-        return null;
+        return raycastHit;
     }
 
     private void VectorDeadValue(Vector2 origin, out Vector2 v, float dead)
@@ -444,7 +448,8 @@ public class PlayerMovement : Controlable
         if (GameManager.Inst.Controller.controlTarget == null)
             GameManager.Inst.Controller.ChangeControlTarget(this);
 
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Cannon"))
+        if ((cannonMask & 1 << collision.gameObject.layer) != 0
+            && collision.gameObject.CompareTag(cannonCoreTag))
         {
             ToCannon(collision);
         }
@@ -478,7 +483,6 @@ public class PlayerMovement : Controlable
     {
         // Player inactivated
         GameManager.Inst.Controller.ChangeControlTarget(null);
-        showText.text = "";
         SetVelocity(Vector2.zero);
         enabled = false;
     }
@@ -486,20 +490,5 @@ public class PlayerMovement : Controlable
     public void SetOppositeDirection()
     {
         SetLocalScale(new Vector2(direction, 1));
-    }
-
-    private void EnableMessages(string message, LayerMask mask)
-    {
-        raycast = GetRay(mask, middle, out middle);
-        if (raycast != null)
-        {
-            var newHit = raycast.Value;
-            ShowMessages.position = newHit.point;
-            showText.text = message;
-        }
-        else
-        {
-            showText.text = "";
-        }
     }
 }
