@@ -1,0 +1,1 @@
+{"bindPairs":[{"key":0,"values":[119,273]},{"key":1,"values":[115,274]},{"key":2,"values":[97,276]},{"key":3,"values":[100,275]},{"key":4,"values":[32,114]},{"key":5,"values":[101,116]}]}

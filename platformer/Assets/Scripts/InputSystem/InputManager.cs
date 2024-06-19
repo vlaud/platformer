@@ -9,9 +9,9 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private Controller controller;
     // variable to store keycodes with icommand
-    private Dictionary<KeyCode, ICommand> keyMapping = new Dictionary<KeyCode, ICommand>();
+    private Dictionary<KeyCode, List<ICommand>> keyMapping = new Dictionary<KeyCode, List<ICommand>>();
     // variable to store reset keymapping
-    private Dictionary<KeyCode, ICommand> resetKeyMapping = new Dictionary<KeyCode, ICommand>();
+    private Dictionary<KeyCode, List<ICommand>> resetKeyMapping = new Dictionary<KeyCode, List<ICommand>>();
 
     // Axis variable for horizontal and vertical
     [SerializeField]
@@ -27,17 +27,22 @@ public class InputManager : MonoBehaviour
     // function to add keymapping
     public void AddKeyMapping(KeyCode key, ICommand command, ICommand resetCommand)
     {
-        keyMapping.Add(key, command);
-        resetKeyMapping.Add(key, resetCommand);
+        if (!keyMapping.ContainsKey(key))
+        {
+            keyMapping.Add(key, new List<ICommand>());
+            resetKeyMapping.Add(key, new List<ICommand>());
+        }
+
+        keyMapping[key].Add(command);
+        resetKeyMapping[key].Add(resetCommand);
     }
 
     public void RemoveKeyMapping(KeyCode key) { keyMapping.Remove(key); }
 
-    // function to reset keymapping
-    public void ResetKeyMapping(KeyCode key)
+    // function to reset keymapping to default
+    public void ResetKeyMapping()
     {
-        if (resetKeyMapping.ContainsKey(key))
-            resetKeyMapping[key].Execute();
+        keyMapping = new Dictionary<KeyCode, List<ICommand>>(resetKeyMapping);
     }
 
     // function to execute actions every keys in keymapping foreach loop
@@ -45,8 +50,7 @@ public class InputManager : MonoBehaviour
     {
         foreach (var key in keyMapping)
         {
-            if (Input.GetKeyDown(key.Key))
-                key.Value.Execute();
+            //if (Input.GetKeyDown(key.Key))
         }
     }
 
@@ -56,11 +60,19 @@ public class InputManager : MonoBehaviour
         if (controller == null)
             controller = FindObjectOfType<Controller>();
 
-        var player = FindObjectOfType<PlayerMovement>();
+        //var player = FindObjectOfType<PlayerMovement>();
 
         // add keymapping
-        AddKeyMapping(KeyCode.E, new InteractCommand(player), new InteractCommand(player));
-        AddKeyMapping(KeyCode.Space, new JumpCommand(player), new JumpCommand(player));
+        //AddKeyMapping(KeyCode.E, new InteractCommand(controller.controlTarget), new InteractCommand(controller.controlTarget));
+        //AddKeyMapping(KeyCode.Space, new JumpCommand(controller.controlTarget), new JumpCommand(controller.controlTarget));
+
+        //controlables = FindObjectsOfType<Controlable>();
+
+        //foreach (var controlable in controlables)
+        //{
+        //    AddKeyMapping(KeyCode.E, new InteractCommand(controlable), new InteractCommand(controlable));
+        //    AddKeyMapping(KeyCode.Space, new JumpCommand(controlable), new JumpCommand(controlable));
+        //}
     }
 
     private void Update()
@@ -68,6 +80,8 @@ public class InputManager : MonoBehaviour
         moveAmount = new Vector2(horizontal.GetAxis(), vertical.GetAxis());
 
         controller.controlTarget?.Move(moveAmount);
+
+        ExecuteKeyMapping();
     }
 }
 
