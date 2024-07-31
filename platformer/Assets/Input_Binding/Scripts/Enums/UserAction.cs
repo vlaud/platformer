@@ -11,13 +11,10 @@ namespace Rito.InputBindings
     /// <summary> 사용자 입력에 의한 행동 정의 </summary>
     public enum UserAction
     {
-        MoveForward,
-        MoveBackward,
         MoveLeft,
         MoveRight,
 
         Jump,
         Interact,
-
     }
 }

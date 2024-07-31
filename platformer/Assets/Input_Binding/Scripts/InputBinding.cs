@@ -98,8 +98,6 @@ namespace Rito.InputBindings
         /// <summary> 초기 상태로 설정 </summary>
         public void ResetAll()
         {
-            BindAllKeys(UserAction.MoveForward, new List<KeyCode>() { KeyCode.W, KeyCode.UpArrow });
-            BindAllKeys(UserAction.MoveBackward, new List<KeyCode>() { KeyCode.S, KeyCode.DownArrow });
             BindAllKeys(UserAction.MoveLeft, new List<KeyCode>() { KeyCode.A, KeyCode.LeftArrow });
             BindAllKeys(UserAction.MoveRight, new List<KeyCode>() { KeyCode.D, KeyCode.RightArrow });
 

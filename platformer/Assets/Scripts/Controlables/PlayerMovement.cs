@@ -51,15 +51,18 @@ public class PlayerMovement : Controlable
     [SerializeField] private float scaleSpeed = 3f;
     [SerializeField] private float scaleRotSpeed = 1000f;
 
+    //TODO: PlayerShowMessageOnRaycast로 옮기기
     [Header("대포")]
     [SerializeField] private LayerMask cannonMask;
     [SerializeField] private string cannonCoreTag = "CannonCore";
 
+    //TODO: PlayerShowMessageOnRaycast로 옮기기
     [Header("박스")]
     [SerializeField] private LayerMask boxMask;
     [SerializeField] private float rayLength = 1f;
     [SerializeField] private Transform mask;
 
+    //TODO: PlayerShowMessageOnRaycast로 옮기기
     [Header("레이캐스트")]
     [SerializeField] private PlayerShowMessageOnRaycast rayCheck;
     [SerializeField] private Vector2 middle;
