@@ -12,7 +12,7 @@ public class Portal : MonoBehaviour, iButtonAction
     private void Awake()
     {
         ps = GetComponent<ParticleSystem>();
-        ButtonAction(false);
+        ButtonAction(IsPortal);
     }
 
     public void ButtonAction(bool v)
