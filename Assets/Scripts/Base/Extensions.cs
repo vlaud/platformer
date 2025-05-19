@@ -1,5 +1,4 @@
 using DG.Tweening;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,20 +9,20 @@ public static class Extensions
         Debug.Log(gameObject);
     }
 
-    // RectTransform ÂüÁ¶¸¦ ÀúÀåÇÏ´Â µñ¼Å³Ê¸®
-    // staticÀ¸·Î ¼±¾ğÇÏ¿© ÇÁ·Î±×·¥ÀÌ ½ÃÀÛÇÒ ¶§ ÇÑ¹ø¸¸ ¸Ş¸ğ¸®¿¡ ÇÒ´ç µÇ°Ô ÇÔ. ¶ÇÇÑ static ÀÌ¹Ç·Î ¸ğµç ÀÎ½ºÅÏ½º¿¡¼­ µ¥ÀÌÅÍ¸¦ °øÀ¯ÇÔ.
-    // readonly¸¦ ÅëÇØ ÀçÇÒ´çÀÌ ºÒ°¡ÇÏµµ·ÏÇÔ = µñ¼Å³Ê¸®°¡ ÇÁ·Î±×·¥ ½ÇÇà µµÁß º¯°æµÇÁö ¾ÊÀ½À» ÀÇ¹Ì
+    // RectTransform ì°¸ì¡°ë¥¼ ì €ì¥í•˜ëŠ” ë”•ì…”ë„ˆë¦¬
+    // staticìœ¼ë¡œ ì„ ì–¸í•˜ì—¬ í”„ë¡œê·¸ë¨ì´ ì‹œì‘í•  ë•Œ í•œë²ˆë§Œ ë©”ëª¨ë¦¬ì— í• ë‹¹ ë˜ê²Œ í•¨. ë˜í•œ static ì´ë¯€ë¡œ ëª¨ë“  ì¸ìŠ¤í„´ìŠ¤ì—ì„œ ë°ì´í„°ë¥¼ ê³µìœ í•¨.
+    // readonlyë¥¼ í†µí•´ ì¬í• ë‹¹ì´ ë¶ˆê°€í•˜ë„ë¡í•¨ = ë”•ì…”ë„ˆë¦¬ê°€ í”„ë¡œê·¸ë¨ ì‹¤í–‰ ë„ì¤‘ ë³€ê²½ë˜ì§€ ì•ŠìŒì„ ì˜ë¯¸
     private static readonly Dictionary<GameObject, RectTransform> _rectTransformDic = new Dictionary<GameObject, RectTransform>();
 
     public static RectTransform rectTransform(this GameObject gameObject)
     {
-        // Ä³½ÃµÈ RectTransformÀÌ ÀÖ´ÂÁö È®ÀÎÇÏ°í ¹İÈ¯
+        // ìºì‹œëœ RectTransformì´ ìˆëŠ”ì§€ í™•ì¸í•˜ê³  ë°˜í™˜
         if (_rectTransformDic.TryGetValue(gameObject, out RectTransform cachedRectTransform))
         {
             return cachedRectTransform;
         }
 
-        // Ä³½ÃµÈ RectTransformÀÌ ¾ø´Â °æ¿ì GetComponent·Î Ã£¾Æ¼­ Ä³½ÃÇÏ°í ¹İÈ¯
+        // ìºì‹œëœ RectTransformì´ ì—†ëŠ” ê²½ìš° GetComponentë¡œ ì°¾ì•„ì„œ ìºì‹œí•˜ê³  ë°˜í™˜
         RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
         _rectTransformDic.Add(gameObject, rectTransform);
         return rectTransform;
@@ -37,7 +36,7 @@ public static class Extensions
             return rectTransform.DOAnchorPos(endValue, duration);
         }
 
-        // rectTransforÀ» ¾²´Â ¿ÀºêÁ§Æ®°¡ ¾Æ´Ï¸é, ±×³É DOMove·Î ÀÌµ¿
+        // rectTransforì„ ì“°ëŠ” ì˜¤ë¸Œì íŠ¸ê°€ ì•„ë‹ˆë©´, ê·¸ëƒ¥ DOMoveë¡œ ì´ë™
         return gameObject.transform.DOMove(endValue, duration);
     }
 }

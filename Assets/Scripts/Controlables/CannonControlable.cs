@@ -11,7 +11,7 @@ public class CannonControlable : Controlable, IObjectAction
     [SerializeField] float shootPower = 30f;
     [SerializeField] PlayerMovement player;
 
-    [Header("¸Þ½ÃÁö")]
+    [Header("ë©”ì‹œì§€")]
     [SerializeField] private Transform _messages;
     [SerializeField] private TMP_Text showText;
 

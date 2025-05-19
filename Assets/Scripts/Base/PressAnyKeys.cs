@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using DG.Tweening;
 using Rito.InputBindings;
+using UnityEngine;
 
 public enum UIBlockParents
 {
@@ -21,16 +19,16 @@ public class PressAnyKeys : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text pressAnyKey;
     bool anyKeyPressed = false;
 
-    [Header("½Ã°£")]
+    [Header("ì‹œê°„")]
     [SerializeField] private float MenuMoveTime = 1f;
     [SerializeField] private float TimeCounter = 0f;
 
-    [Header("Å¸ÀÌÆ²")]
+    [Header("íƒ€ì´í‹€")]
     [SerializeField] private TMPro.TMP_Text title;
 
     [SerializeField] private Vector2 TitlePressKeyPos = Vector2.zero;
 
-    [Header("¸Ş´º")]
+    [Header("ë©”ë‰´")]
     [SerializeField] private RectTransform MenuButtons;
     [SerializeField] private Vector2 MenuButtonsPressKeyPos = Vector2.zero;
 
