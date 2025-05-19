@@ -8,10 +8,10 @@ public class PlayerMovement : Controlable
         Moving, Flying
     }
 
-    [Header("Ä«¸Ş¶ó")]
+    [Header("ì¹´ë©”ë¼")]
     [SerializeField] private CameraController cameraController;
 
-    [Header("¿òÁ÷ÀÓ, Á¡ÇÁ")]
+    [Header("ì›€ì§ì„, ì í”„")]
     [SerializeField] private float speed;
     [SerializeField] private float jumpPower = 300f;
     [SerializeField] private int jumpLimit = 2;
@@ -24,7 +24,7 @@ public class PlayerMovement : Controlable
     private Rigidbody2D body;
     private Ground _ground;
 
-    [Header("º® Á¡ÇÁ")]
+    [Header("ë²½ ì í”„")]
     [SerializeField] private LayerMask wallMask;
     private bool isWallSliding;
     private bool isWallJumping;
@@ -35,7 +35,7 @@ public class PlayerMovement : Controlable
     [SerializeField] private Vector2 wallJumpingPower = new Vector2(8f, 16f);
     [SerializeField] private float wallSlidingSpeed = 2f;
 
-    [Header("¹°¸®")]
+    [Header("ë¬¼ë¦¬")]
     [SerializeField] private float desireX;
     [SerializeField] private Collider2D _collider;
     [SerializeField] private Vector3 groundBoxSize;
@@ -45,25 +45,25 @@ public class PlayerMovement : Controlable
     [SerializeField] private float jumpBufferTime = 0.2f;
     private float jumpBufferCounter;
 
-    [Header("Æ÷Å»")]
+    [Header("í¬íƒˆ")]
     [SerializeField] private Vector3 scaleChange = new Vector3(0.01f, 0.01f, 0.01f);
     [SerializeField] private float gateMoveSpeed = 3f;
     [SerializeField] private float scaleSpeed = 3f;
     [SerializeField] private float scaleRotSpeed = 1000f;
 
-    //TODO: PlayerShowMessageOnRaycast·Î ¿Å±â±â
-    [Header("´ëÆ÷")]
+    //TODO: PlayerShowMessageOnRaycastë¡œ ì˜®ê¸°ê¸°
+    [Header("ëŒ€í¬")]
     [SerializeField] private LayerMask cannonMask;
     [SerializeField] private string cannonCoreTag = "CannonCore";
 
-    //TODO: PlayerShowMessageOnRaycast·Î ¿Å±â±â
-    [Header("¹Ú½º")]
+    //TODO: PlayerShowMessageOnRaycastë¡œ ì˜®ê¸°ê¸°
+    [Header("ë°•ìŠ¤")]
     [SerializeField] private LayerMask boxMask;
     [SerializeField] private float rayLength = 1f;
     [SerializeField] private Transform mask;
 
-    //TODO: PlayerShowMessageOnRaycast·Î ¿Å±â±â
-    [Header("·¹ÀÌÄ³½ºÆ®")]
+    //TODO: PlayerShowMessageOnRaycastë¡œ ì˜®ê¸°ê¸°
+    [Header("ë ˆì´ìºìŠ¤íŠ¸")]
     [SerializeField] private PlayerShowMessageOnRaycast rayCheck;
     [SerializeField] private Vector2 middle;
     [SerializeField] private Vector2 hitNormal;
@@ -91,7 +91,7 @@ public class PlayerMovement : Controlable
 
     private void Update()
     {
-        if (body.velocity.y <= 0)
+        if (body.linearVelocity.y <= 0)
         {
             if (GameManager.Inst.Controller.controlTarget == null)
                 GameManager.Inst.Controller.ChangeControlTarget(this);
@@ -154,13 +154,13 @@ public class PlayerMovement : Controlable
         switch (State)
         {
             case PlayerState.Moving:
-                SetVelocity(new Vector2(horizontal * (speed - _ground.Friction), body.velocity.y));
+                SetVelocity(new Vector2(horizontal * (speed - _ground.Friction), body.linearVelocity.y));
                 break;
             case PlayerState.Flying:
                 desireX = Mathf.Lerp(desireX, horizontal, speed * GameManager.Inst.GameDeltaTime);
-                float x = desireX + body.velocity.x;
+                float x = desireX + body.linearVelocity.x;
                 x = Mathf.Clamp(x, -speed, speed);
-                SetVelocity(new Vector2(x, body.velocity.y));
+                SetVelocity(new Vector2(x, body.linearVelocity.y));
                 break;
         }
     }
@@ -198,7 +198,7 @@ public class PlayerMovement : Controlable
         if (jumpTimes < jumpLimit)
         {
             coyoteTimeCounter = 0f;
-            SetVelocity(new Vector2(body.velocity.x, 0f));
+            SetVelocity(new Vector2(body.linearVelocity.x, 0f));
 
             body.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             jumpTimes++;
@@ -214,7 +214,7 @@ public class PlayerMovement : Controlable
         if (IsWalled() && !IsGrounded() && horizontal != 0f)
         {
             isWallSliding = true;
-            SetVelocity(new Vector2(body.velocity.x, Mathf.Clamp(body.velocity.y, -wallSlidingSpeed, float.MaxValue)));
+            SetVelocity(new Vector2(body.linearVelocity.x, Mathf.Clamp(body.linearVelocity.y, -wallSlidingSpeed, float.MaxValue)));
         }
         else
         {
@@ -334,7 +334,7 @@ public class PlayerMovement : Controlable
     #region BasicMethods
     public void SetVelocity(Vector2 velocity)
     {
-        body.velocity = velocity;
+        body.linearVelocity = velocity;
     }
 
     public void SetRigidbody(bool v)
@@ -381,7 +381,7 @@ public class PlayerMovement : Controlable
     IEnumerator ToGateCoroutine(GateAction gate)
     {
         SetVelocity(Vector2.zero);
-        body.isKinematic = true;
+        body.bodyType = RigidbodyType2D.Kinematic;
         body.freezeRotation = true;
         GameManager.Inst.Controller.ChangeControlTarget(gate);
         SetLocalScale(Vector2.one);
@@ -421,7 +421,7 @@ public class PlayerMovement : Controlable
         SetLocalScale(Vector2.one);
         transform.rotation = Quaternion.identity;
         body.freezeRotation = false;
-        body.isKinematic = false;
+        body.bodyType = RigidbodyType2D.Dynamic;
         SetGravity(2.5f);
         GameManager.Inst.Controller.ChangeControlTarget(this);
     }

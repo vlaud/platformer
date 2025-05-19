@@ -50,7 +50,7 @@ public class Box : MonoBehaviour, IObjectAction
     {
         RaycastHit2D raycastHit = Physics2D.Raycast(transform.position, Vector2.down, 10f, 1 << LayerMask.NameToLayer("SeeSaw"));
 
-        if (rb.velocity.y > 5f)
+        if (rb.linearVelocity.y > 5f)
         {
             rb.AddForce(raycastHit.normal * shootForce, ForceMode2D.Impulse);
             Debug.Log("shoot");

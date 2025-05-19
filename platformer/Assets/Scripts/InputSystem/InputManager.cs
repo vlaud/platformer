@@ -58,7 +58,7 @@ public class InputManager : MonoBehaviour
     {
         // when controlTarget is null, set controlTarget to player
         if (controller == null)
-            controller = FindObjectOfType<Controller>();
+            controller = FindFirstObjectByType<Controller>();
 
         //var player = FindObjectOfType<PlayerMovement>();
 

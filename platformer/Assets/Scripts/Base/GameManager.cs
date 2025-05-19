@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Inst;
-    private void Awake() => Inst = this;
+    private static GameManager instance = null;
+    public static GameManager Inst => instance;
+    private void Awake() => instance = this;
 
     public PlayerMovement Player;
     public Controller Controller;

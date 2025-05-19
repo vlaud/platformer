@@ -9,8 +9,7 @@ public class WorldMessageManager : MonoBehaviour
 
     private void Awake()
     {
-        var iObjectActions = FindObjectsOfType<MonoBehaviour>().OfType<IObjectAction>();
-
+        var iObjectActions = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<IObjectAction>();
         foreach (var iObjectAction in iObjectActions)
         {
             iObjectAction.GetTextObject(_messages, showText);

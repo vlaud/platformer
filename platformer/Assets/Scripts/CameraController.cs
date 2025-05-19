@@ -58,7 +58,7 @@ public class CameraController : MonoBehaviour
         var body = camTarget.GetComponent<Rigidbody2D>();
         
         lookAhead.x = Mathf.Lerp(lookAhead.x, (aheadDistance.x * camTarget.localScale.x), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
-        lookAhead.y = Mathf.Lerp(lookAhead.y, aheadDistance.y * (body.velocity.y < dropYVelocity ? -1f : 1f), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
+        lookAhead.y = Mathf.Lerp(lookAhead.y, aheadDistance.y * (body.linearVelocity.y < dropYVelocity ? -1f : 1f), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
 
         transform.position = new Vector3(camTarget.position.x + lookAhead.x, camTarget.position.y + lookAhead.y, transform.position.z);
     }
