@@ -91,11 +91,17 @@ public class PlayerMovement : Controlable
 
     private void Update()
     {
-        if (body.linearVelocity.y <= 0)
+        if (body.linearVelocity.y <= Mathf.Epsilon)
         {
             if (GameManager.Inst.Controller.controlTarget == null)
                 GameManager.Inst.Controller.ChangeControlTarget(this);
+        }
+    }
 
+    private void FixedUpdate()
+    {
+        if (body.linearVelocity.y <= 0)
+        {
             if (IsGrounded())
             {
                 coyoteTimeCounter = coyoteTime;
