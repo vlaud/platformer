@@ -1,41 +1,10 @@
 using UnityEngine;
 
-public class Box : MonoBehaviour, IObjectAction
+public class Box : SwitchableObjects
 {
-    private Rigidbody2D rb;
-    [SerializeField] private float shootForce = 10f;
-    [SerializeField] private Vector3 boxSize;
-    [SerializeField] private LayerMask groundMask;
-
-    [Header("¸Þ½ÃÁö")]
-    [SerializeField] private Transform _messages;
-    [SerializeField] private TMPro.TMP_Text showText;
-
-    public void GetTextObject(Transform target, TMPro.TMP_Text showText)
-    {
-        _messages = target;
-        this.showText = showText;
-    }
-
-    public void SetTextAppear(bool v)
-    {
-        showText.gameObject.SetActive(v);
-    }
-
-    public void SetMessages()
-    {
-        if (showText == null) return;
-        showText.text = "Switch";
-    }
-
-    public void SetTextPosition(Vector3 position)
-    {
-        _messages.position = position;
-    }
-
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        base.Init();
     }
 
     private void OnCollisionExit2D(Collision2D collision)

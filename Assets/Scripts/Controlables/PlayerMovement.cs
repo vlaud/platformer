@@ -75,6 +75,8 @@ public class PlayerMovement : Controlable
     public LayerMask GroundMask => groundMask;
 
     public PlayerState State = PlayerState.Moving;
+    public ObjectType type = ObjectType.Box;
+
 
     private void Awake()
     {
@@ -483,8 +485,7 @@ public class PlayerMovement : Controlable
 
         var maskAction = mask.GetComponent<MaskAction>();
 
-        maskAction.GetPlayer(this);
-        maskAction.GetSwitchTarget(newHit.transform);
+        maskAction.GetSwitchTargets(this, newHit.transform.GetComponent<SwitchableObjects>());
         maskAction.RotateToDown(desiredDir, -desiredDir);
     }
 

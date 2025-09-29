@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -9,9 +8,7 @@ public class MaskAction : MonoBehaviour
     [SerializeField] private float rotSpeed = 10f;
     [SerializeField] private Transform[] childs;
     [SerializeField] private PlayerMovement player;
-    [SerializeField] private Transform switchTarget;
-
-    public PlayerMovement Player => player;
+    [SerializeField] private SwitchableObjects switchTarget;
 
     private void Awake()
     {
@@ -20,17 +17,9 @@ public class MaskAction : MonoBehaviour
         SetChildActive(false);
     }
 
-    public void GetSwitchTarget(Transform target)
+    public void GetSwitchTargets(PlayerMovement player, SwitchableObjects target)
     {
-        if (switchTarget == target) return;
-
         switchTarget = target;
-    }
-
-    public void GetPlayer(PlayerMovement player)
-    {
-        if (this.player == player) return;
-
         this.player = player;
     }
 
@@ -42,16 +31,29 @@ public class MaskAction : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 몸체 전환 함수
+    /// </summary>
     void SwitchPosition()
     {
-        Vector2 temp = player.transform.position;
-        player.transform.position = switchTarget.position;
-        switchTarget.position = temp;
+        // TODO: 몸체 바꿀 때, controlable을 바꾸는 식으로 수정
+        // switch position
+        (player.transform.position, switchTarget.transform.position)
+         = (switchTarget.transform.position, player.transform.position);
+
+        // switch ObjectType
+        (player.type, switchTarget.type) = (switchTarget.type, player.type);
+
 
         // player activate
         GameManager.Inst.Controller.ChangeControlTarget(player);
         player.enabled = true;
         player.SetOppositeDirection();
+
+        // switch sprite
+        (player.transform.GetComponent<SpriteRenderer>().sprite, switchTarget.transform.GetComponent<SpriteRenderer>().sprite)
+         = (switchTarget.transform.GetComponent<SpriteRenderer>().sprite, player.transform.GetComponent<SpriteRenderer>().sprite);
+
     }
 
     IEnumerator RotatingToPosition(Vector3 dir)
@@ -80,7 +82,7 @@ public class MaskAction : MonoBehaviour
 
             transform.Rotate(Vector3.forward * delta * rotDir, Space.World);
 
-            GameManager.Inst.CameraController.CamDampMove(switchTarget);
+            GameManager.Inst.CameraController.CamDampMove(switchTarget.transform);
 
             yield return null;
         }
