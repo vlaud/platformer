@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class WorldMessageManager : MonoBehaviour
 {
-    [Header("¸Þ½ÃÁö")]
+    [Header("ë©”ì‹œì§€")]
     [SerializeField] private Transform _messages;
     [SerializeField] private TMPro.TMP_Text showText;
 
     private void Awake()
     {
-        var iObjectActions = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).OfType<IObjectAction>();
+        var iObjectActions = FindObjectsByType<MonoBehaviour>().OfType<IObjectAction>();
         foreach (var iObjectAction in iObjectActions)
         {
             iObjectAction.GetTextObject(_messages, showText);

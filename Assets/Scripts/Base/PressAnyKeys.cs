@@ -1,14 +1,7 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using Rito.InputBindings;
 using UnityEngine;
-
-public enum UIBlockParents
-{
-    BackOption,
-    MenuButtons,
-    Options,
-    SubOptions,
-}
 
 public class PressAnyKeys : MonoBehaviour
 {
@@ -20,41 +13,33 @@ public class PressAnyKeys : MonoBehaviour
     bool anyKeyPressed = false;
 
     [Header("시간")]
-    [SerializeField] private float MenuMoveTime = 1f;
-    [SerializeField] private float TimeCounter = 0f;
+    [SerializeField] private float MenuMoveTime = 0.5f;
 
     [Header("타이틀")]
     [SerializeField] private TMPro.TMP_Text title;
 
     [SerializeField] private Vector2 TitlePressKeyPos = Vector2.zero;
 
-    [Header("메뉴")]
-    [SerializeField] private RectTransform MenuButtons;
-    [SerializeField] private Vector2 MenuButtonsPressKeyPos = Vector2.zero;
-
-    //[SerializeField] private RectTransform[] UIBlocks;
-    [SerializeField] private EnumArray<UIBlockParents, RectTransform> _UIBlocks;
+    private IUISubject curUI;
+    private Dictionary<UIType, IUISubject> _UIMenus;
+    private Stack<IUISubject> _UIStack;
 
     [SerializeField] private InputBindingManager InputBindingManager;
 
     private void Start()
     {
-        //UIBlocks = new RectTransform[System.Enum.GetValues(typeof(UIBlockParents)).Length];
-        _UIBlocks = new EnumArray<UIBlockParents, RectTransform>(System.Enum.GetValues(typeof(UIBlockParents)).Length);
-        foreach (RectTransform rt in _mainmenu.GetComponentsInChildren<RectTransform>())
-        {
-            if (rt.gameObject.CompareTag("UIBlock"))
-            {
-                Debug.Log(rt.parent);
-                if (rt.parent == MenuButtons)
-                {
-                    
-                    _UIBlocks[UIBlockParents.MenuButtons] = rt;
-                    //UIBlocks[(int)UIBlockParents.MenuButtons] = rt;
-                }
+        _UIMenus = new Dictionary<UIType, IUISubject>();
+        _UIStack = new Stack<IUISubject>();
 
+        foreach (MonoBehaviour m in _mainmenu.GetComponentsInChildren<MonoBehaviour>())
+        {
+            if (m is IUISubject i)
+            {
+                i.Init(ref _UIMenus, MenuMoveTime);
             }
         }
+
+        SetCurUITarget(UIType.MenuButtons);
     }
 
     void Update()
@@ -81,11 +66,6 @@ public class PressAnyKeys : MonoBehaviour
         }
     }
 
-    private void CountTime()
-    {
-        TimeCounter = MenuMoveTime;
-    }
-
     private void TitleBlink()
     {
         if (!anyKeyPressed)
@@ -96,35 +76,82 @@ public class PressAnyKeys : MonoBehaviour
 
     private void AnykeyPressedAction()
     {
-        SetUIBlock(UIBlockParents.MenuButtons, true);
         title.rectTransform.DOAnchorPos(TitlePressKeyPos, MenuMoveTime, false).SetEase(Ease.OutExpo);
-        MenuButtons.DOAnchorPos(MenuButtonsPressKeyPos, MenuMoveTime, false)
-            .SetEase(Ease.OutExpo)
-            .OnComplete(() => SetUIBlock(UIBlockParents.MenuButtons, false));
+        ShowUI();
     }
 
-    private void SetUIBlock(UIBlockParents uib, bool v)
+    private void ShowUI()
     {
-        _UIBlocks[uib].gameObject.SetActive(v);
+        curUI.Activate();
+    }
+
+    private void HideUI()
+    {
+        curUI.Deactivate();
+    }
+
+    private void StackUI()
+    {
+        if (_UIStack.Count == 0)
+        {
+            _UIMenus[UIType.BackOption].Activate();
+        }
+        HideUI();
+        _UIStack.Push(curUI);
+    }
+
+    private void PopUI()
+    {
+        HideUI();
+        SetCurUITarget(_UIStack.Pop());
+        ShowUI();
+        if (_UIStack.Count == 0)
+        {
+            _UIMenus[UIType.BackOption].Deactivate();
+            return;
+        }
+    }
+
+    private void SetCurUITarget(UIType uib)
+    {
+        curUI = _UIMenus[uib];
+    }
+
+    private void SetCurUITarget(IUISubject s)
+    {
+        curUI = s;    
     }
 
     public void OnOptionsDown()
     {
-
+        StackUI();
+        SetCurUITarget(UIType.Options);
+        ShowUI();
     }
 
     public void OnBackMenus()
     {
-
+        PopUI();
     }
 
     public void OnKeySets()
     {
-
+        StackUI();
+        SetCurUITarget(UIType.SubOptions);
+        ShowUI();
     }
 
     public void OnBackOptions()
     {
+        PopUI();
+    }
 
+    public void ExitGame()
+    {
+        Application.Quit();
+
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        #endif
     }
 }

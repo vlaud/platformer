@@ -23,7 +23,8 @@ public class InputManager : MonoBehaviour
     // Vector2 variable to store horizontal and vertical axis
     [SerializeField]
     private Vector2 moveAmount;
-
+    [SerializeField]
+    private Vector2 move;
     // function to add keymapping
     public void AddKeyMapping(KeyCode key, ICommand command, ICommand resetCommand)
     {
@@ -58,7 +59,7 @@ public class InputManager : MonoBehaviour
     {
         // when controlTarget is null, set controlTarget to player
         if (controller == null)
-            controller = FindFirstObjectByType<Controller>();
+            controller = FindAnyObjectByType<Controller>();
 
         //var player = FindObjectOfType<PlayerMovement>();
 
@@ -78,7 +79,7 @@ public class InputManager : MonoBehaviour
     private void Update()
     {
         moveAmount = new Vector2(horizontal.GetAxis(), vertical.GetAxis());
-
+        move = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         controller.controlTarget?.Move(moveAmount);
 
         ExecuteKeyMapping();
