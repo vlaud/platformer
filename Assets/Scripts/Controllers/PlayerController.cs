@@ -1,19 +1,11 @@
 using UnityEngine;
 
-public class PlayerController : Controller
+public class PlayerController : Controller, IController
 {
-    void Update()
-    {
-        //InputMoveAxis();
-        InputRotateAxis();
-        InputInteractAction();
-        InputJumpAction();
-    }
-
-    private void InputMoveAxis()
+    public void InputMoveAxis(Vector2 move)
     {
         if(controlTarget != null)
-            controlTarget.Move(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
+            controlTarget.Move(move);
     }
 
     private void InputRotateAxis()
@@ -22,21 +14,15 @@ public class PlayerController : Controller
             controlTarget.Rotate(new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")));
     }
 
-    private void InputInteractAction()
+    public void InputInteractAction()
     {
-        if (Input.GetButtonDown("Interact"))
-        {
-            if (controlTarget != null)
+        if (controlTarget != null)
                 controlTarget.Interact();
-        }
     }
 
-    private void InputJumpAction()
+    public void InputJumpAction()
     {
-        if (Input.GetButtonDown("Jump"))
-        {
-            if (controlTarget != null)
+        if (controlTarget != null)
                 controlTarget.Jump();
-        }
     }
 }

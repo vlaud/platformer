@@ -1,7 +1,8 @@
+using Project.Tools.InterfaceHelp;
 using TMPro;
 using UnityEngine;
 
-public class CannonControlable : Controlable, IObjectAction
+public class CannonControlable : Controlable, IObjectAction, ICannonControlable
 {
     [SerializeField] private Transform launcher;
     [SerializeField] private Transform shootPos;
@@ -9,14 +10,20 @@ public class CannonControlable : Controlable, IObjectAction
     [SerializeField] Vector2 rotLimit = new Vector2(-70f, 70f);
     [SerializeField] float rot;
     [SerializeField] float shootPower = 30f;
-    [SerializeField] PlayerMovement player;
+    [SerializeField] private InterfaceHolder<IPlayerMovement> player_;
 
     [Header("메시지")]
     [SerializeField] private Transform _messages;
     [SerializeField] private TMP_Text showText;
 
-    public Transform Launcher => launcher;
-    public Transform ShootPos => shootPos;
+    public Transform Launcher()
+    {
+        return launcher;
+    }
+    public Transform ShootPos()
+    {
+        return shootPos;
+    }
     public Transform CannonBall => cannonBall;
 
     private void Awake()
@@ -37,7 +44,7 @@ public class CannonControlable : Controlable, IObjectAction
     public override void Move(Vector2 input)
     {
         float rotDir = rot <= 0f ? 1f : -1f;
-        player.transform.localScale = new Vector2(rotDir, 1);
+        player_.Value.SetLocalScale(new Vector2(rotDir, 1));
 
         rot -= input.x;
         rot = Mathf.Clamp(rot, rotLimit.x, rotLimit.y);
@@ -54,8 +61,8 @@ public class CannonControlable : Controlable, IObjectAction
         cannonBall.position = shootPos.position;
         cannonBall.SetParent(null);
 
-        player?.SetRigidbody(true);
-        player?.ChangeState(PlayerMovement.PlayerState.Flying);
+        player_.Value?.SetRigidbody(true);
+        player_.Value?.Launched();
         GameManager.Inst.Controller.ChangeControlTarget(null);
         GameManager.Inst.CameraController.SetCamTarget(GameManager.Inst.Player.transform);
 
@@ -63,15 +70,14 @@ public class CannonControlable : Controlable, IObjectAction
             cannonBall.GetComponent<Rigidbody2D>().AddForce(shootPos.up * shootPower, ForceMode2D.Impulse);
 
         cannonBall = null;
-        player = null;
+        player_.SetValue(null);
     }
 
     public void SetCannonBall(Transform cannonball)
     {
         cannonBall = cannonball;
 
-        if (cannonball.GetComponent<PlayerMovement>() != null)
-            player = cannonball.GetComponent<PlayerMovement>();
+        player_.SetValue(cannonball.GetMostDerivedComponent<IPlayerMovement>());
     }
 
     public void GetTextObject(Transform target, TMP_Text showText)

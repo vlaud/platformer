@@ -34,6 +34,7 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             if (t == _inst) return;
             Destroy(this);
+            Destroy(gameObject);
         }
     }
 

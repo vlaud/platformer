@@ -45,6 +45,10 @@ namespace Project.Tools.InterfaceHelp
             {
                 this.value = mb;
             }
+            else if (value == null)
+            {
+                this.value = null;
+            }
             else
             {
                 Debug.LogWarning($"Assigned object must implement interface {typeof(T).Name}");

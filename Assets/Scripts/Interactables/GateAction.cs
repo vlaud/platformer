@@ -1,33 +1,41 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Portal))]
-public class GateAction : Controlable
+public class GateAction : Controlable, IGateAction
 {
     public bool IsEntrance = false;
-    public GateAction ConnectedGate;
+    public bool toNextStage = false;
+    public GateAction ConnectedGate_;
 
     private Portal portal;
+    private Action<IGateAction> nextStageAction;
 
     private void Awake()
     {
         portal = GetComponent<Portal>();
-        if (IsEntrance) CreateConnection(this, false);
+        if (IsEntrance && ConnectedGate_ != null) CreateConnection(this, false);
+
+        nextStageAction = toNextStage ? ToNextStage : null;
     }
 
     private void Update()
     {
         if (!IsEntrance)
         {
-            portal.ButtonAction(ConnectedGate.portal.IsPortal);
+            portal.ButtonAction(ConnectedGate_.portal.IsPortal);
         }
     }
 
+    private void ToNextStage(IGateAction gate)
+    {
+        SceneLoader.ChangeScene("Title");
+    }
+    
     public void CreateConnection(GateAction gate, bool v)
     {
-        ConnectedGate.ConnectedGate = gate;
-        ConnectedGate.IsEntrance = v;
+        ConnectedGate_.ConnectedGate_ = gate;
+        ConnectedGate_.IsEntrance = v;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -37,37 +45,52 @@ public class GateAction : Controlable
             if (IsEntrance)
             {
                 Debug.Log("gateIn");
-                collision.GetComponent<PlayerMovement>().ToGate(this);
+                collision.gameObject.GetMostDerivedComponent<IGateSubject>().ToGate(this, nextStageAction);
             }
             else
             {
                 if (GameManager.Inst.Controller.controlTarget == null) return;
-                if (GetTypeofControlable.GetType(GameManager.Inst.Controller.controlTarget.transform)
-                    != typeof(GateAction)) return;
+                if (GameManager.Inst.Controller
+                    .controlTarget.transform.GetType<GateAction>() == null) return;
 
                 Debug.Log("gateOut");
-                collision.GetComponent<PlayerMovement>().OutGate();
+                collision.gameObject.GetMostDerivedComponent<IGateSubject>().OutGate();
             }
         }
     }
 
+    public void GateIn()
+    {
+        GameManager.Inst.Controller.ChangeControlTarget(this);
+    }
+
+    public IGateAction GetConnectedGate()
+    {
+        return ConnectedGate_;
+    }
+
+    public Vector3 GetPos()
+    {
+        return transform.position;
+    }
+
     public override void Move(Vector2 input)
     {
-        //throw new System.NotImplementedException();
+
     }
 
     public override void Rotate(Vector2 input)
     {
-        //throw new System.NotImplementedException();
+
     }
 
     public override void Interact()
     {
-        //throw new System.NotImplementedException();
+
     }
 
     public override void Jump()
     {
-        //throw new System.NotImplementedException();
+
     }
 }

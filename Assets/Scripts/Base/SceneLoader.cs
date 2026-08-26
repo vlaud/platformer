@@ -3,19 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Events;
+using System;
 
 public class SceneLoader : Singleton<SceneLoader>
 {
     private Dictionary<string, int> sceneNumDict = new Dictionary<string, int>();
-    private Dictionary<string, UnityAction> sceneBeforeActionDict = new Dictionary<string, UnityAction>();
-    private Dictionary<string, UnityAction> sceneActionDict = new Dictionary<string, UnityAction>();
-
+    private Dictionary<string, List<Action<string>>> sceneBeforeActionDict = new Dictionary<string, List<Action<string>>>();
+    private Dictionary<string, List<Action<string>>> sceneActionDict = new Dictionary<string, List<Action<string>>>();
+    private static string curScene_;
+    public static string CurSceneName
+    {
+        get => curScene_;
+        set
+        {
+            curScene_ = value;
+        }
+    }
     bool isChange = false;
 
     private void Awake()
     {
-        base.Initialize();
+        Initialize();
         DontDestroyOnLoad(gameObject);
 
         SetSceneIndices();
@@ -31,6 +39,7 @@ public class SceneLoader : Singleton<SceneLoader>
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    #region Scene Setting
     private void SetSceneIndices()
     {
         int sceneCount = SceneManager.sceneCountInBuildSettings;
@@ -40,37 +49,86 @@ public class SceneLoader : Singleton<SceneLoader>
             string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
             string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
             sceneNumDict[sceneName] = i;
+            Debug.Log(sceneName);
         }
     }
 
-    private static void SetScenes()
+    private static void SetScenes(List<ISceneLoadAction> l)
     {
-        
+        ComponentTypeFinder.Initialize();
+        CurSceneName = SceneManager.GetActiveScene().name;
+        Debug.Log(CurSceneName);
+        foreach (var a in l)
+        {
+            a.SetSceneAction();
+        }
     }
 
-    private static void SetBeforeActionDict()
+    private static void SetBeforeActionDict(List<ISceneLoadAction> l)
     {
-        
+        if (!Inst.sceneBeforeActionDict.ContainsKey(CurSceneName))
+        {
+            Inst.sceneBeforeActionDict[CurSceneName] = new List<Action<string>>();
+        }
+        foreach (var a in l)
+        {
+            Inst.sceneBeforeActionDict[CurSceneName].Add(a.BeforAction);
+        }
     }
 
-    private static void SetActionDict()
+    private static void SetActionDict(List<ISceneLoadAction> l)
     {
-        
+        if (!Inst.sceneActionDict.ContainsKey(CurSceneName))
+        {
+            Inst.sceneActionDict[CurSceneName] = new List<Action<string>>();
+        }
+        foreach (var a in l)
+        {
+            Inst.sceneActionDict[CurSceneName].Add(a.AfterAction);
+        }
+    }
+    #endregion
+
+    #region  Scene Invoking
+    private static void InvokeBeforeActionDict(string name)
+    {
+        if (!Inst.sceneBeforeActionDict.ContainsKey(name)) return;
+
+        foreach (var a in Inst.sceneBeforeActionDict[name])
+        {
+            a.Invoke(name);
+        }
+
     }
 
+    private static void InvokeActionDict(string name)
+    {
+        if (!Inst.sceneActionDict.ContainsKey(name)) return;
+
+        foreach (var a in Inst.sceneActionDict[name])
+        {
+            a.Invoke(name);
+        }
+    }
+    #endregion
+    
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void RuntimeInitOnLoad()
     {
-        SetScenes();
-        SetBeforeActionDict();
-        SetActionDict();
+        List<ISceneLoadAction> l = ComponentTypeFinder.FindAllImplementing<ISceneLoadAction>();
+        SetScenes(l);
+        SetBeforeActionDict(l);
+        SetActionDict(l);
+        InvokeActionDict(CurSceneName);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        SetScenes();
-        if (sceneActionDict.ContainsKey(scene.name) == false) return;
-        sceneActionDict[scene.name]?.Invoke();
+        List<ISceneLoadAction> l = ComponentTypeFinder.FindAllImplementing<ISceneLoadAction>();
+        SetScenes(l);
+        SetBeforeActionDict(l);
+        SetActionDict(l);
+        InvokeActionDict(scene.name);
     }
 
     public static void ChangeScene(int i)
@@ -80,10 +138,7 @@ public class SceneLoader : Singleton<SceneLoader>
 
     public static void ChangeScene(string scene)
     {
-        if (Inst.sceneBeforeActionDict.ContainsKey(scene))
-        {
-            Inst.sceneBeforeActionDict[scene]?.Invoke();
-        }
+        InvokeBeforeActionDict(scene);
 
         ChangeScene(Inst.sceneNumDict[scene]);
     }

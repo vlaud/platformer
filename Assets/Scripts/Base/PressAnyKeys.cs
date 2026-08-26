@@ -52,17 +52,9 @@ public class PressAnyKeys : MonoBehaviour
             AnykeyPressedAction();
         }
 
-        foreach (var key in InputBindingManager._binding.Bindings[UserAction.MoveLeft])
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (Input.GetKeyDown(key))
-            {
-                Debug.Log("MoveLeft Pressed"); 
-            }
-
-            if (Input.GetKey(key))
-            {
-                Debug.Log("MoveLeft Pressing");
-            }
+            PopUI();
         }
     }
 
@@ -102,13 +94,14 @@ public class PressAnyKeys : MonoBehaviour
 
     private void PopUI()
     {
+        if (_UIStack.Count == 0) return;
+        
         HideUI();
         SetCurUITarget(_UIStack.Pop());
         ShowUI();
         if (_UIStack.Count == 0)
         {
             _UIMenus[UIType.BackOption].Deactivate();
-            return;
         }
     }
 
@@ -144,6 +137,11 @@ public class PressAnyKeys : MonoBehaviour
     public void OnBackOptions()
     {
         PopUI();
+    }
+
+    public void StartGame()
+    {
+        SceneLoader.ChangeScene("Stage1");
     }
 
     public void ExitGame()

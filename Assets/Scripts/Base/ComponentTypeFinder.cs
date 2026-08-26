@@ -128,18 +128,9 @@ public static class ComponentTypeFinder
             return componentList.Cast<T>().ToList();
         }
 
-        List<MonoBehaviour> results = new List<MonoBehaviour>();
-
         // 딕셔너리에 없으면 새로 검색
-        MonoBehaviour[] allBehaviours = UnityEngine.Object.FindObjectsByType<MonoBehaviour>();
-
-        foreach (var behaviour in allBehaviours)
-        {
-            if (behaviour is T)
-            {
-                results.Add(behaviour);
-            }
-        }
+        List<MonoBehaviour> results = UnityEngine.Object.FindObjectsByType<MonoBehaviour>().Where(b => b is T).ToList();
+        
         // 검색 결과를 딕셔너리에 저장
         _components[interfaceType] = results;
 

@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
+using Project.Tools.InterfaceHelp;
 using UnityEngine;
 
-public class PlayerMovement : Controlable
+public class PlayerMovement : Controlable, IPlayerMovement, IGateSubject
 {
     public enum PlayerState
     {
@@ -9,7 +11,7 @@ public class PlayerMovement : Controlable
     }
 
     [Header("카메라")]
-    [SerializeField] private CameraController cameraController;
+    [SerializeField] private InterfaceHolder<ICameraController> cameraController_;
 
     [Header("움직임, 점프")]
     [SerializeField] private float speed;
@@ -370,15 +372,20 @@ public class PlayerMovement : Controlable
         CannonControlable target = collision.gameObject.GetComponent<CannonControlable>();
         SetRigidbody(false);
         target.SetCannonBall(transform);
-        transform.SetParent(target.Launcher);
+        transform.SetParent(target.Launcher());
         GameManager.Inst.Controller.ChangeControlTarget(target);
+    }
+
+    public void Launched()
+    {
+        ChangeState(PlayerState.Flying);
     }
     #endregion
 
     #region GateAction
-    public void ToGate(GateAction gate)
+    public void ToGate(IGateAction gate, Action<IGateAction> done = null)
     {
-        StartCoroutine(ToGateCoroutine(gate));
+        StartCoroutine(ToGateCoroutine(gate, done));
     }
 
     public void OutGate()
@@ -386,19 +393,27 @@ public class PlayerMovement : Controlable
         StartCoroutine(OutGateCoroutine());
     }
 
-    IEnumerator ToGateCoroutine(GateAction gate)
+    private void ToNextGate(IGateAction gate)
     {
+        cameraController_.Value.SetCamTarget(null);
+        transform.position = gate.GetConnectedGate().GetPos();
+    }
+    
+    IEnumerator ToGateCoroutine(IGateAction gate, Action<IGateAction> done)
+    {
+        if (done == null) done = ToNextGate;
+
         SetVelocity(Vector2.zero);
         body.bodyType = RigidbodyType2D.Kinematic;
         body.freezeRotation = true;
-        GameManager.Inst.Controller.ChangeControlTarget(gate);
+        gate.GateIn();
         SetLocalScale(Vector2.one);
 
-        while (Vector3.Distance(transform.position, gate.transform.position) > 0.1f)
+        while (Vector3.Distance(transform.position, gate.GetPos()) > 0.1f)
         {
             Debug.Log("Moving");
             yield return null;
-            transform.position += (gate.transform.position - transform.position).normalized * GameManager.Inst.GameDeltaTime * gateMoveSpeed;
+            transform.position += (gate.GetPos() - transform.position).normalized * GameManager.Inst.GameDeltaTime * gateMoveSpeed;
         }
 
         yield return new WaitForSeconds(0.5f);
@@ -411,15 +426,14 @@ public class PlayerMovement : Controlable
             transform.Rotate(Vector3.forward * GameManager.Inst.GameDeltaTime * -scaleRotSpeed, Space.World);
         }
 
-        cameraController.SetCamTarget(null);
-        transform.position = gate.ConnectedGate.transform.position;
+        done.Invoke(gate);
     }
 
     IEnumerator OutGateCoroutine()
     {
         while (transform.localScale.y < 1f)
         {
-            cameraController.CamDampMove(GameManager.Inst.Player.transform);
+            cameraController_.Value.CamDampMove(GameManager.Inst.Player.transform);
             yield return null;
 
             transform.localScale += scaleChange * GameManager.Inst.GameDeltaTime * scaleSpeed;

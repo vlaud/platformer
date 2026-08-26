@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Portal : MonoBehaviour, iButtonAction
+public class Portal : MonoBehaviour, IButtonAction
 {
     [SerializeField] private Color _originColor;
     ParticleSystem ps;

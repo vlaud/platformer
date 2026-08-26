@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraController : MonoBehaviour
+public class CameraController : MonoBehaviour, ICameraController
 {
     // Character Cam
     [SerializeField] private Vector2 aheadDistance;
@@ -25,23 +25,25 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        if(camTarget != null)
+        if (camTarget != null)
             CamStateProcess();
     }
 
     void CamStateProcess()
     {
-        if (GetTypeofControlable.GetType(camTarget) == typeof(PlayerMovement))
+        Controlable c = camTarget.GetMostDerivedComponent<Controlable>();
+
+        if (c is IPlayerMovement p)
         {
             CharacterCamMove();
         }
 
-        if (GetTypeofControlable.GetType(camTarget) == typeof(CannonControlable))
+        if (c is ICannonControlable n)
         {
-            CannonCamMove();
+            CannonCamMove(n);
         }
 
-        if (GetTypeofControlable.GetType(camTarget) == typeof(GateAction))
+        if (c is IGateAction g)
         {
             SetVelocityOfCam(Vector2.zero);
             GateCamMove();
@@ -56,23 +58,22 @@ public class CameraController : MonoBehaviour
     void CharacterCamMove()
     {
         var body = camTarget.GetComponent<Rigidbody2D>();
-        
+
         lookAhead.x = Mathf.Lerp(lookAhead.x, (aheadDistance.x * camTarget.localScale.x), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
         lookAhead.y = Mathf.Lerp(lookAhead.y, aheadDistance.y * (body.linearVelocity.y < dropYVelocity ? -1f : 1f), GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
 
         transform.position = new Vector3(camTarget.position.x + lookAhead.x, camTarget.position.y + lookAhead.y, transform.position.z);
     }
 
-    void CannonCamMove()
+    void CannonCamMove(ICannonControlable cannon)
     {
-        var cannon = camTarget.GetComponent<CannonControlable>();
-        float rot = cannon.Launcher.rotation.z;
+        float rot = cannon.Launcher().rotation.z;
         float rotDir = rot <= 0f ? 1f : -1f;
 
         Vector3 desiredPos = new Vector3(camTarget.position.x + aheadDistance.x * rotDir, camTarget.position.y + aheadDistance.y, transform.position.z);
         transform.position = Vector3.Lerp(transform.position, desiredPos, GameManager.Inst.GameUnscaledDeltaTime * cameraSpeed);
 
-        lookAhead = transform.position - cannon.ShootPos.position;
+        lookAhead = transform.position - cannon.ShootPos().position;
     }
 
     public void SetCamTarget(Transform target)
